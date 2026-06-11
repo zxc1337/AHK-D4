@@ -1,22 +1,77 @@
-# AHK 鼠标宏 -Diablo4 D4 暗黑破坏神4 -Diablo2 D2 -LastEpoch LE 最后纪元
+# AHK Mouse Macro - Diablo 4 & Diablo 2: Resurrected & Last Epoch
 
-#### 介绍
-* 暗黑破坏神IV，暗黑破坏神4， D4，Diablo IV, D2R 暗黑二重制版, 最后纪元，Last Epoch,  AHK 鼠标宏
-* 用于虚拟/组合各种按键操作，如：设置鼠标左键/右键/中键/滚轮，在按下、松开，双击，滚动时对应的操作，基本包括了游戏内可能出现各种按键需求，降低80%+的按键量。
-* 相比D3版本，增加了一个按键位（共五个技能位），可指定为任何键。
+#### Introduction
+* Diablo IV, D4, D2R (Diablo II: Resurrected), Last Epoch (LE) - AutoHotkey Mouse Macros
+* Used for virtualizing/combining various keyboard operations, such as: setting mouse left/right/middle button/scroll wheel functions on press, release, double-click, scroll
+* Supports 5 configurable skill slots
 
-#### 建议键位
+#### Recommended Key Setup
 
-* 所有游戏中：保持默认按键的同时，将强制移动的其中一个设置为"Z"，强制站立的其中一个设置为"."；
-* D4中，鼠标滚轮缩放画面选项取消掉（选项-控制-游戏功能-最下面），这样才可以释放滚轮上、滚轮下来设置独立的功能；
-* D2中，鼠标滚轮切换上一/下一技能要取消掉，这样才可以释放滚轮上、滚轮下来设置独立的功能；
+* For all games: Set "Force Move" to "Z" and "Force Stand" to "."
+* In D4: Disable mouse wheel zoom in Settings → Controls → Gameplay so wheel up/down work independently
+* In D2: Disable mouse wheel skill switching for independent wheel functions
 
-#### 适配分辨率
-* 自动类型的功能（如D4一键切换技能,D2自动加游戏），需要按屏幕比例为定位。如果不需此类功能，则无视分辨率设置。
-* D4：使用宏快捷更换技能功能等，适配16:9，非此比例的显示器只能用窗口模式缩放至此比例。
-* D2：多开窗口自动创建/加入游戏，适配2550x1440窗口模式，且需要使用MDK插件，如果觉得MDK太占内存，可使用作者整合的WILL插件（原版WILL + 快捷创建/加入按钮 + 一键购买 + 血条加长 + 精英怪红圈），下载WILL.SD.V2.zip解压即可。
+#### Resolution Compatibility
+* Auto functions rely on screen aspect ratio. Ignore if not using auto-features
+* D4: Compatible with 16:9 resolution
+* D2: Compatible with 2560x1440 windowed mode (requires MDK plugin)
 
-#### 使用
+#### Usage
+* Start/Stop macro: Mouse side button 1
+* For detailed settings, see the macro interface
 
-* 启动/关闭快捷键：鼠标内侧侧键。
-* 详细设置请看宏界面说明文档。
+---
+
+## Key Features
+
+### General Settings Tab
+- **Game Selection**: Diablo IV, D2R, Last Epoch
+- **Channel Keys**: Skill channeling triggers with auto-start
+- **Auto-Trigger**: 4 skill slots with adjustable delays
+- **Key Binding**: Assign keys to skills and movement
+- **Mouse Buttons**: Hold/Release configurations
+- **Double-Click**: Left/right button settings
+- **Scroll Wheel**: Up/down functions
+- **Custom Macros**: Up to 10 custom macros
+- **Global Delays**: Mouse and keyboard settings
+
+### D2R Settings Tab
+- **Window Management**: 8 game windows
+- **Multi-Launch**: Multiple instances
+- **Game Creation**: Auto-create rooms
+- **Difficulty**: Normal/Nightmare/Hell
+
+### Config Switching
+- **Quick Presets**: Ctrl+2 through Ctrl+8
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut | Function |
+|----------|----------|
+| Mouse Button 1 | Enable/Disable Macro |
+| Ctrl+1 | Main Config |
+| Ctrl+2-8 | Quick Configs |
+| Alt+1-8 | D2R Windows |
+| T,M,I,S,Enter | Auto-Stop |
+
+## File Structure
+
+```
+D4SourceLE.ahk              Main script
+D4.sadan.cfg                Default config
+commonSetting.ini           Global settings
+D2R_Configs/                D2R configurations
+D4_Configs/                 D4 configurations
+LE_Configs/                 Last Epoch configs
+TRANSLATION_MAP.md          Translation guide
+```
+
+## Credits
+
+Originally created by **bigsadan**
+
+---
+
+**For personal use only - Use responsibly**
