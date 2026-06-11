@@ -1,4 +1,4 @@
-﻿#DllImport,ahkExec,%A_AhkPath%\ahkExec,Str,,UInt,0,CDecl
+﻿; DllImport,ahkExec,%A_AhkPath%\ahkExec,Str,,UInt,0,CDecl
 
 GroupAdd, GameGroup, ahk_exe Last Epoch.exe
 GroupAdd, GameGroup, ahk_exe Diablo IV.exe
@@ -8,14 +8,14 @@ GroupAdd, GameGroup, ahk_exe D2R.exe
 
 /*
 #Include Gdip.ahk
-; 初始化 Gdip
+; Initialize Gdip
 pToken := Gdip_Startup()
 if !pToken {
-    MsgBox, GDI+ 初始化失败！
+    MsgBox, GDI+ initialization failed!
     ExitApp
 }
 
-; 脚本结束时释放资源
+; Release resources on script exit
 OnExit("ExitFunc")
 ExitFunc() {
     global pToken
@@ -24,20 +24,20 @@ ExitFunc() {
 }
 */
 
-global handlePath := "handle.exe"  ; 确保handle.exe在脚本目录
+global handlePath := "handle.exe"  ; Make sure handle.exe is in the script directory
 global logFile := "log.txt"
-global secs := 10000  ; 等待时间（毫秒）
-global commonIni := "commonSetting.ini"  ; 配置文件路径
+global secs := 10000  ; Wait time (milliseconds)
+global commonIni := "commonSetting.ini"  ; Config file path
 global mainhwnd := 0
 
-boss_Enable=0         ;宏总开关
-other_Enable=0        ;非战斗状态检测总开关
-LabelAutoCloseWin_status=0 ;自动关闭窗口开关
-dubo_Enable=0         ;赌博变量开关
-temp_Enable=0         ;临时开关
-channel_Enable=0      ;引导技能开关
-channel2_Enable=0     ;引导技能2开关
-BAutoL_Enable=0      ;左键自动按键开关
+boss_Enable=0         ; Macro master switch
+other_Enable=0        ; Non-combat state detection master switch
+LabelAutoCloseWin_status=0 ; Auto close window switch
+dubo_Enable=0         ; Gambling variable switch
+temp_Enable=0         ; Temporary switch
+channel_Enable=0      ; Channel skill switch
+channel2_Enable=0     ; Channel skill 2 switch
+BAutoL_Enable=0      ; Left click auto press switch
 BAutoR_Enable=0      ;
 BAuto1_Enable=0      ;
 BAuto2_Enable=0      ;
@@ -49,23 +49,23 @@ BMarco2_Enable=0      ;
 BMarco3_Enable=0      ;
 BMarco4_Enable=0      ;
 BMarco5_Enable=0      ;
-channel_status=0      ;引导状态，用于恢复
-channel2_status=0     ;引导状态，用于恢复
-BAutoL_status=0       ;左键状态，用于恢复
-BAutoR_status=0       ;
+channel_status=0      ; Channel status, for recovery
+channel2_status=0     ; Channel status 2, for recovery
+BAutoL_status=0       ; Left button status, for recovery
+BAutoR_status=0      ;
 BAuto1_status=0      ;
 BAuto2_status=0      ;
 BAuto3_status=0      ;
 BAuto4_status=0      ;
 BAutoMouseL_status=0 ;
-real_key := ""        ;引导按键，用于恢复
-real_key2 := ""       ;引导按键，用于恢复
-v_Tab=0               ;tab键控制开关
-SelectedFile=""       ;配置文件选择变量
-SelectedUserFile=""   ;用户自定文件选择变量
-selectSkillLabelL=""  ;左键按下技能对应的Label
-selectSkillLabelR=""  ;右键按下技能对应的Label
-LoadUserCode_enable := 0  ;是否己载入用户自定义代码文件
+real_key := ""        ; Channel key, for recovery
+real_key2 := ""       ; Channel key 2, for recovery
+v_Tab=0               ; Tab key control switch
+SelectedFile=""       ; Config file selection variable
+SelectedUserFile=""   ; User custom file selection variable
+selectSkillLabelL=""  ; Left button press skill corresponding Label
+selectSkillLabelR=""  ; Right button press skill corresponding Label
+LoadUserCode_enable := 0  ; Whether user custom code file has been loaded
 forcemove_key := "z"
 forceStand_key := "."
 BMoveKey := "z"
@@ -75,12 +75,12 @@ BSkillKey2 := "2"
 BSkillKey3 := "3"
 BSkillKey4 := "4"
 HotKeyList := "Shift|Ctrl|space|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|1|2|3|4|5|6|7|8|9|0|-|=|`|,|.|/|\|[|]" 
-send_multi_quit := 0 ;多次发送按键时判断是否应该退出
+send_multi_quit := 0 ; Multiple key send quit check
 lastLClickTime := 0
 lastRClickTime := 0
 timeSinceLastClick := 0
 
-;左右键自定义宏循环运行的计数器
+; Left/right button custom macro loop run counter
 marcoTimerCount := 0
 marco1TimerCount := 0
 marco2TimerCount := 0
@@ -90,7 +90,7 @@ marco5TimerCount := 0
 marcoLTimerCount := 0
 marcoRTimerCount := 0
 
-;技能按键控制队列，使用就绪状态机制
+; Skill key control queue, using ready state mechanism
 global Skill1Pending := false
 global Skill2Pending := false
 global Skill3Pending := false
@@ -100,11 +100,11 @@ global MouseLPending := false
 global MouseRPending := false
 global DispatchIndex := 1
 
-;技能面板中的位置
+; Skill panel position
 SkillSrcPos := ""
-;技能栏中的位置
+; Skill bar position
 SkillDesPos := ""
-;自定义快捷键
+; Custom hotkey
 LastHotkey := ""
 
 i := 0
@@ -113,13 +113,13 @@ loop
     i := i+1
     if (i >= 11)
         break
-    actionArray%i% := [] ;自定义宏1数组
-    actionArrayStatus%i% := [] ;自定义1宏数组状态值
-    actionArrayCount%i% := 40 ;自定义宏1数组最大值
-    actionArrayIndex%i% := 0 ;当前数组索引值
+    actionArray%i% := [] ; Custom macro 1 array
+actionArrayStatus%i% := [] ; Custom macro 1 array status value
+actionArrayCount%i% := 40 ; Custom macro 1 array max value
+actionArrayIndex%i% := 0 ; Current array index value
 }
 
-serverItem := "暗黑破坏神IV|暗黑破壞神IV|Diablo II: Resurrected|Last Epoch"
+serverItem := "Diablo IV|Diablo IV|Diablo II: Resurrected|Last Epoch"
 moveItem := "z|x"
 standItem := ".|shift"
 avoidItem := "space"
@@ -130,37 +130,37 @@ skillkye2Item := "2|w"
 skillkye3Item := "3|e"
 skillkye4Item := "4|r"
 
-actionItem := "单击按键|按住按键|松开按键|等待时间|发送文本|自定义语句|暂停宏动作|关闭宏|显示信息|关闭信息|占位|更换技能|单次自定义语句|连按技能|停止连按技能|多次按键|鼠标转圈|鼠标移动位置|随机按键|保存鼠标位置|恢复鼠标位置|循环背包" ;自定义宏的选项
-actionContent := "" ;自定义选项具体内容
+actionItem := "Click Key|Hold Key|Release Key|Wait Time|Send Text|Custom Statement|Pause Macro|Close Macro|Show Info|Close Info|Placeholder|Change Skill|Single Custom Statement|Continuous Skill|Stop Continuous Skill|Multiple Keys|Mouse Circle|Mouse Move Position|Random Key|Save Mouse Position|Restore Mouse Position|Loop Backpack" ; Custom macro options
+actionContent := "" ; Custom option specific content
 savedMousePosionX := 0
 savedMousePosionY := 0
 
-marceItem := "自定义宏1|自定义宏2|自定义宏3|自定义宏4|自定义宏5|自定义宏6|自定义宏7|自定义宏8|自定义宏9|自定义宏10" ;自定义宏列表
-marceItemS := "自定义宏1|自定义宏2|自定义宏3|自定义宏4|自定义宏5" ;自定义宏列表简
+marceItem := "Custom Macro1|Custom Macro2|Custom Macro3|Custom Macro4|Custom Macro5|Custom Macro6|Custom Macro7|Custom Macro8|Custom Macro9|Custom Macro10" ; Custom macro list
+marceItemS := "Custom Macro1|Custom Macro2|Custom Macro3|Custom Macro4|Custom Macro5" ; Custom macro list short
 currentMarco := 0
 
-dclickItem := "无操作|技能1|技能2|技能3|技能4|闪避|第5技能|自定义宏1|自定义宏2|自定义宏3|自定义宏4|自定义宏5|自定义宏6|自定义宏7|自定义宏8|自定义宏9|自定义宏10" ;双击左/右键选项
-enableItem := "不启用|运行时|非运行时|任何时间" ;生效设置选项
+dclickItem := "No Action|Skill1|Skill2|Skill3|Skill4|Dodge|Skill5|Custom Macro1|Custom Macro2|Custom Macro3|Custom Macro4|Custom Macro5|Custom Macro6|Custom Macro7|Custom Macro8|Custom Macro9|Custom Macro10" ; Double click left/right options
+enableItem := "Disable|When Running|When Not Running|Any Time" ; Activation settings options
 
-marcoAccessKey := "" ;触发自定义宏的键
+marcoAccessKey := "" ; Key to trigger custom macro
 
-d2rWindows_count := 0 ;D2R的所有窗口数量
-d2rMainAccountName := "" ;D2R创建游戏的主账号昵称，指显示在好友列中的名称，用于快速加入
-D2R_GamePosition := 0 ;0为游戏内，1为人物界面
+d2rWindows_count := 0 ; Number of D2R windows
+d2rMainAccountName := "" ; D2R main account name for creating game, name shown in friends list for quick join
+D2R_GamePosition := 0 ;0=in game,1=character screen
 
-SelectedFileExtra := ""       ;快速配置文件临时变量
+SelectedFileExtra := ""       ; Quick config temp variable
 
-commonSettingFile := "common.ini" ;全局配置文件
-create_d2r_toggle := 1 ;创建D2R窗口流程开关
+commonSettingFile := "common.ini" ; Global config file
+create_d2r_toggle := 1 ; D2R window creation process switch
 
 Hotkey3_enable=0         
 Hotkey4_enable=0         
 Hotkey5_enable=0         
 
-WinUserMarco := 0 ;自定义宏1窗口句柄
+WinUserMarco := 0 ; Custom macro1 window handle
 
-dm_enable = 0 ;大漠插件开关
-hWndArray := 0 ;绑定窗口集合
+dm_enable = 0 ; Big Desert plugin switch
+hWndArray := 0 ; Bound window collection
 
 Gosub, ShowTray
 
@@ -169,619 +169,619 @@ MyGUI:
 {
 	Gui, -MaximizeBox -MinimizeBox +ToolWindow
 
-    ;Gui, Add, Tab3,, 通用设置|自动设置|喊话设置|自定义代码 ;|插件功能
-    Gui, Add, Tab3,, 通用设置|D2R设置|配置切换 ;|插件功能
-    ;;;;;;;;;通用设置选项卡内容;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;Gui, Add, Tab3,, General Settings|Auto Settings|Shout Settings|Custom Code ;|Plugin Features
+    Gui, Add, Tab3,, General Settings|D2R Settings|Config Switch ;|Plugin Features
+    ;;;;;;;;;General Settings Tab Content;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	Gui, Add, GroupBox, x15 y24 w690 h600, 
     
-    Gui, Add, Text, x25 y50 w60 h20, 框体名称：
+    Gui, Add, Text, x25 y50 w60 h20, Server Name:
     Gui, Add, ComboBox, x85 y47 w110 h80 choose1 vBServer, %serverItem%  ;vBServer
     
-    ;Gui, Add, Text, x25 y80 w200 h20, 注：简体为国服，繁体为亚服及美服
+    ;Gui, Add, Text, x25 y80 w200 h20, Note: Simplified is CN server, Traditional is Asia/US server
     
     /*
-    Gui, Add, Text, x25 y80 w60 h20, 自动强移：
-	Gui, Add, CheckBox, x85 y77 w80 h20 vBFouceMove, 开启 ;vBFouceMove
+    Gui, Add, Text, x25 y80 w60 h20, Auto Force Move:
+	Gui, Add, CheckBox, x85 y77 w80 h20 vBFouceMove, Enable ;vBFouceMove
     */
     
-    Gui, Add, Text, x25 y80 w60 h20, 引导键1：
-    Gui, Add, CheckBox, x85 y77 h20  vBchannel, 自启 ;vBchannel
-	Gui, Add, DropDownList, x135 y77 w60 AltSubmit choose1 vBchannelKey, 右键|1号技能|2号技能|3号技能|4号技能|强制移动|强制站立|第5技能  ;vBchannelKey
+    Gui, Add, Text, x25 y80 w60 h20, Channel Key 1:
+    Gui, Add, CheckBox, x85 y77 h20  vBchannel, Auto Start ;vBchannel
+	Gui, Add, DropDownList, x135 y77 w60 AltSubmit choose1 vBchannelKey, Right Button|Skill 1|Skill 2|Skill 3|Skill 4|Force Move|Force Stand|Skill 5  ;vBchannelKey
     
-    Gui, Add, Text, x25 y110 w60 h20, 引导键2：
-    Gui, Add, CheckBox, x85 y107 h20  vBchannel2, 自启 ;vBchannel2
-	Gui, Add, DropDownList, x135 y107 w60 AltSubmit choose1 vBchannelKey2, 右键|1号技能|2号技能|3号技能|4号技能|强制移动|强制站立|第5技能  ;vBchannelKey2  
+    Gui, Add, Text, x25 y110 w60 h20, Channel Key 2:
+    Gui, Add, CheckBox, x85 y107 h20  vBchannel2, Auto Start ;vBchannel2
+	Gui, Add, DropDownList, x135 y107 w60 AltSubmit choose1 vBchannelKey2, Right Button|Skill 1|Skill 2|Skill 3|Skill 4|Force Move|Force Stand|Skill 5  ;vBchannelKey2  
     
-	Gui, Add, Text, x210 y50 w40 h20, 1：
-	Gui, Add, CheckBox, x230 y47 w40 h20 vBAuto1, 自动 ;vBAuto1
+	Gui, Add, Text, x210 y50 w40 h20, 1:
+	Gui, Add, CheckBox, x230 y47 w40 h20 vBAuto1, Auto ;vBAuto1
     Gui, Add, Edit, x275 y47 w35 h20 Limit5 Number vBDelay1, 100 ;vBDelay1
     Gui, Add, Edit, x315 y47 w35 h20 Limit5 Number vBDelay12, 0 ;vBDelay12
-	Gui, Add, CheckBox, x355 y47 w40 h20 vBKeep1, 续 ;
+	Gui, Add, CheckBox, x355 y47 w40 h20 vBKeep1, Continue ;
     GuiControl, Hide, BKeep1
     
-	Gui, Add, Text, x210 y80 w40 h20, 2：
-	Gui, Add, CheckBox, x230 y77 w40 h20 vBAuto2, 自动 ;vBAuto2
+	Gui, Add, Text, x210 y80 w40 h20, 2:
+	Gui, Add, CheckBox, x230 y77 w40 h20 vBAuto2, Auto ;vBAuto2
     Gui, Add, Edit, x275 y77 w35 h20 Limit5 Number vBDelay2, 100 ;vBDelay2
     Gui, Add, Edit, x315 y77 w35 h20 Limit5 Number vBDelay22, 0 ;vBDelay22
-	Gui, Add, CheckBox, x355 y77 w40 h20 vBKeep2, 续 ;vBAuto2
+	Gui, Add, CheckBox, x355 y77 w40 h20 vBKeep2, Continue ;vBAuto2
     GuiControl, Hide, BKeep2
     
-    Gui, Add, Text, x395 y50 w40 h20, 3：
-	Gui, Add, CheckBox, x415 y47 w40 h20 checked vBAuto3, 自动 ;vBAuto3
+    Gui, Add, Text, x395 y50 w40 h20, 3:
+	Gui, Add, CheckBox, x415 y47 w40 h20 checked vBAuto3, Auto ;vBAuto3
     Gui, Add, Edit, x460 y47 w35 h20 Limit5 Number vBDelay3, 100 ;vBDelay3
     Gui, Add, Edit, x500 y47 w35 h20 Limit5 Number vBDelay32, 0 ;vBDelay32
-	Gui, Add, CheckBox, x540 y47 w40 h20  vBKeep3, 续 ;vBAuto3
+	Gui, Add, CheckBox, x540 y47 w40 h20  vBKeep3, Continue ;vBAuto3
     GuiControl, Hide, BKeep3
-    ;Gui, Add, Text, x375 y50 w40 h20, 3：
-	;Gui, Add, CheckBox, x395 y47 w40 h20 checked vBAuto3, 自动 ;vBAuto3
-    ;Gui, Add, Edit, x440 y47 w35 h20 Limit5 Number vBDelay3, 100 ;vBDelay3
-    ;Gui, Add, Edit, x480 y47 w35 h20 Limit5 Number vBDelay32, 0 ;vBDelay32
+    ;Gui, Add, Text, x375 y50 w40 h20, 3:
+	;Gui, Add, CheckBox, x395 y47 w40 h20 checked vBAuto3, Auto ;vBAuto3
+	;Gui, Add, Edit, x440 y47 w35 h20 Limit5 Number vBDelay3, 100 ;vBDelay3
+	;Gui, Add, Edit, x480 y47 w35 h20 Limit5 Number vBDelay32, 0 ;vBDelay32
     
-    Gui, Add, Text, x395 y80 w40 h20, 4：
-	Gui, Add, CheckBox, x415 y77 w40 h20 checked vBAuto4, 自动 ;vBAuto4
+    Gui, Add, Text, x395 y80 w40 h20, 4:
+	Gui, Add, CheckBox, x415 y77 w40 h20 checked vBAuto4, Auto ;vBAuto4
     Gui, Add, Edit, x460 y77 w35 h20 Limit5 Number vBDelay4, 100 ;vBDelay4
     Gui, Add, Edit, x500 y77 w35 h20 Limit5 Number vBDelay42, 0 ;vBDelay42
-	Gui, Add, CheckBox, x540 y77 w40 h20  vBKeep4, 续 ;vBAuto4
+	Gui, Add, CheckBox, x540 y77 w40 h20  vBKeep4, Continue ;vBAuto4
     GuiControl, Hide, BKeep4
     
-	Gui, Add, Text, x210 y110 w60 h20, 左：
-	Gui, Add, CheckBox, x230 y107 w40 h20 vBAutoL, 自动 ;vBAutoL
+	Gui, Add, Text, x210 y110 w60 h20, Left:
+	Gui, Add, CheckBox, x230 y107 w40 h20 vBAutoL, Auto ;vBAutoL
     Gui, Add, Edit, x275 y107 w35 h20 Limit5 Number vBDelayL, 100 ;vBDelayL
     Gui, Add, Edit, x315 y107 w35 h20 Limit5 Number vBDelayL2, 0 ;vBDelayL2
-	Gui, Add, CheckBox, x355 y107 w40 h20 vBKeepL, 续 ;vBAutoL
+	Gui, Add, CheckBox, x355 y107 w40 h20 vBKeepL, Continue ;vBAutoL
     GuiControl, Hide, BKeepL
     
-	Gui, Add, Text, x395 y110 w60 h20, 右：
-	Gui, Add, CheckBox, x415 y107 w40 h20 vBAutoR, 自动 ;vBAutoR
+	Gui, Add, Text, x395 y110 w60 h20, Right:
+	Gui, Add, CheckBox, x415 y107 w40 h20 vBAutoR, Auto ;vBAutoR
     Gui, Add, Edit, x460 y107 w35 h20 Limit5 Number vBDelayR, 100 ;vBDelayR
     Gui, Add, Edit, x500 y107 w35 h20 Limit5 Number vBDelayR2, 0 ;vBDelayR2
-	Gui, Add, CheckBox, x540 y107 w40 h20 vBKeepR, 续 ;
+	Gui, Add, CheckBox, x540 y107 w40 h20 vBKeepR, Continue ;
     GuiControl, Hide, BKeepR    
     
-	Gui, Add, Text, x395 y150 w60 h20, 5：
-	Gui, Add, CheckBox, x415 y147 w40 h20 vBAutoMouseL, 自动 ;
+	Gui, Add, Text, x395 y150 w60 h20, 5:
+	Gui, Add, CheckBox, x415 y147 w40 h20 vBAutoMouseL, Auto ;
     Gui, Add, Edit, x460 y147 w35 h20 Limit5 Number vBDelayMouseL, 100 ;
     Gui, Add, Edit, x500 y147 w35 h20 Limit5 Number vBDelayMouseL2, 0 ;
-	Gui, Add, CheckBox, x540 y147 w40 h20 vBKeepMouseL, 续 ;
+	Gui, Add, CheckBox, x540 y147 w40 h20 vBKeepMouseL, Continue ;
     GuiControl, Hide, BKeepMouseL  
 
     ;--------------------------------------------------------------------------
       
-    Gui, Add, Text, x585 y50 h20, 1-号技能：
+    Gui, Add, Text, x585 y50 h20, Skill 1:
     Gui, Add, ComboBox, x655 y47 w40 h80 choose1 vBSkillKey1, %skillkye1Item%
     
-    Gui, Add, Text, x585 y80 h20, 2-号技能：
+    Gui, Add, Text, x585 y80 h20, Skill 2:
     Gui, Add, ComboBox, x655 y77 w40 h80 choose1 vBSkillKey2, %skillkye2Item%
     
-    Gui, Add, Text, x585 y110 h20, 3-号技能：
+    Gui, Add, Text, x585 y110 h20, Skill 3:
     Gui, Add, ComboBox, x655 y107 w40 h80 choose1 vBSkillKey3, %skillkye3Item%
     
-    Gui, Add, Text, x585 y140 h20, 4-号技能：
+    Gui, Add, Text, x585 y140 h20, Skill 4:
     Gui, Add, ComboBox, x655 y137 w40 h80 choose1 vBSkillKey4, %skillkye4Item%
     
-    Gui, Add, Text, x585 y170 h20, 强制移动：
+    Gui, Add, Text, x585 y170 h20, Force Move:
     Gui, Add, ComboBox, x655 y167 w40 h80 choose1 vBMoveKey, %moveItem%
     
-    Gui, Add, Text, x585 y200 h20, 强制站立：
+    Gui, Add, Text, x585 y200 h20, Force Stand Still:
     Gui, Add, ComboBox, x655 y197 w40 h80 choose1 vBStandKey, %standItem%
     
-    ;Gui, Add, Text, x585 y230 h20, 闪避技能：
+    ;Gui, Add, Text, x585 y230 h20, Dodge Skill:
     ;Gui, Add, ComboBox, x655 y227 w40 h80 choose1 vBAvoidKey, %avoidItem%
     
-    Gui, Add, Text, x585 y230 h20, 第5技能：
+    Gui, Add, Text, x585 y230 h20, Skill 5:
     Gui, Add, ComboBox,  x655 y227 w40 h80 choose1 vBLMouseKey, %lmouseItem%
     
-    ;Gui, Add, Text, x585 y260 h20, 左键技能：
+    ;Gui, Add, Text, x585 y260 h20, Left Button Skill:
     ;Gui, Add, ComboBox, x655 y257 w40 h80 choose1 vBLMouseKey, %lmouseItem%
     
-    Gui, Add, Text, x460 y260 h20 vBHorseLabel, 骑马技能：
+    Gui, Add, Text, x460 y260 h20 vBHorseLabel, Mount Skill:
     Gui, Add, ComboBox, x530 y257 w40 h80 choose1 vBHorseKey, %horseItem%
     GuiControl, Hide, BHorseLabel
     GuiControl, Hide, BHorseKey  
     ;--------------------------------------------------------------------------
     
-	Gui, Add, Text, x25 y150 w60 h20, 左键按住
-    Gui, Add, DropDownList, x80 y147 w75 gLMHSelectChange AltSubmit choose1 vBModeL, 无操作|强制移动|释放技能1|释放技能2|释放技能3|释放技能4|%marceItems%|连点左键|中键切换状态|闪避|释放第5技能
-    Gui, Add, CheckBox, x165 y145 h20  vBStandL, 站立
-    Gui, Add, CheckBox, x218 y145 h20 vBOnceL, 单次
+	Gui, Add, Text, x25 y150 w60 h20, Left Button Hold
+    Gui, Add, DropDownList, x80 y147 w75 gLMHSelectChange AltSubmit choose1 vBModeL, No Action|Force Move|Release Skill1|Release Skill2|Release Skill3|Release Skill4|%marceItems%|Continuous Left Click|Middle Button Switch| Dodge|Release Skill5
+    Gui, Add, CheckBox, x165 y145 h20  vBStandL, Stand Still
+    Gui, Add, CheckBox, x218 y145 h20 vBOnceL, Single
     
-	Gui, Add, Text, x25 y180 w60 h20, 右键按住
-	Gui, Add, DropDownList, x80 y177 w75 gRMHSelectChange AltSubmit choose1 vBModeR, 无操作|强制移动|释放技能1|释放技能2|释放技能3|释放技能4|%marceItems%|连点右键|中键切换状态|闪避|释放第5技能
-    Gui, Add, CheckBox, x165 y175 h20 vBStandR, 站立
-    Gui, Add, CheckBox, x218 y175 h20 vBOnceR, 单次
+	Gui, Add, Text, x25 y180 w60 h20, Right Button Hold
+	Gui, Add, DropDownList, x80 y177 w75 gRMHSelectChange AltSubmit choose1 vBModeR, No Action|Force Move|Release Skill1|Release Skill2|Release Skill3|Release Skill4|%marceItems%|Continuous Right Click|Middle Button Switch|Dodge|Release Skill5
+    Gui, Add, CheckBox, x165 y175 h20 vBStandR, Stand Still
+    Gui, Add, CheckBox, x218 y175 h20 vBOnceR, Single
     
-	Gui, Add, Text, x270 y150 w60 h20, 左键松开
-	Gui, Add, DropDownList, x325 y147 w60 AltSubmit choose1 vBModeReleaseL, %marceItems%|无操作
+	Gui, Add, Text, x270 y150 w60 h20, Left Button Release
+	Gui, Add, DropDownList, x325 y147 w60 AltSubmit choose1 vBModeReleaseL, %marceItems%|No Action
     
-	Gui, Add, Text, x270 y180 w60 h20, 右键松开
-	Gui, Add, DropDownList, x325 y177 w60 AltSubmit choose1 vBModeReleaseR, %marceItems%|无操作
+	Gui, Add, Text, x270 y180 w60 h20, Right Button Release
+	Gui, Add, DropDownList, x325 y177 w60 AltSubmit choose1 vBModeReleaseR, %marceItems%|No Action
 
-    Gui, Add, Text, x25 y215 w60 h20, 显示模式：
-    Gui, Add, DropDownList, x85 y212 AltSubmit choose1 vBDispMode, 窗口模式|全屏模式  ;vBDispMode
+    Gui, Add, Text, x25 y215 w60 h20, Display Mode:
+    Gui, Add, DropDownList, x85 y212 AltSubmit choose1 vBDispMode, Windowed|Fullscreen  ;vBDispMode
     
-    Gui, Add, Text, x25 y250 w60 h20, 左键双击
+    Gui, Add, Text, x25 y250 w60 h20, Left Double Click
 	Gui, Add, DropDownList, x80 y247 w75 AltSubmit choose1 vBDClickL, %dclickItem%
     Gui, Add, DropDownList, x165 y247 w75 AltSubmit choose1 vBEnableDCL, %enableItem%
     
-	Gui, Add, Text, x25 y280 w60 h20, 右键双击
+	Gui, Add, Text, x25 y280 w60 h20, Right Double Click
 	Gui, Add, DropDownList, x80 y277 w75 AltSubmit choose1 vBDClickR, %dclickItem%
     Gui, Add, DropDownList, x165 y277 w75 AltSubmit choose1 vBEnableDCR, %enableItem%
 
-    ;--------滚轮上下设置--------------------------------------------------------
-	Gui, Add, Text, x270 y250 w60 h20, 滚轮向上
+    ;--------Mouse Wheel Settings--------------------------------------------------------
+	Gui, Add, Text, x270 y250 w60 h20, Wheel Up
     Gui, Add, DropDownList, x325 y247 w75 AltSubmit choose1 vBWheelUp, %dclickItem%
     Gui, Add, DropDownList, x410 y247 w75 AltSubmit choose1 vBEnableWU, %enableItem%
     
-	Gui, Add, Text, x270 y280 w60 h20, 滚轮向下
+	Gui, Add, Text, x270 y280 w60 h20, Wheel Down
     Gui, Add, DropDownList, x325 y277 w75 AltSubmit choose1 vBWheelDown, %dclickItem%
     Gui, Add, DropDownList, x410 y277 w75 AltSubmit choose1 vBEnableWD, %enableItem%
     ;--------------------------------------------------------------------------
     
-	Gui, Add, Text, x410 y270 w60 h20 vBEnableLabel, 生效设置
-	Gui, Add, DropDownList, x465 y267 w80 AltSubmit choose1 vBEnableDoubleClick, 不启用|运行时|非运行时|任何时间
+	Gui, Add, Text, x410 y270 w60 h20 vBEnableLabel, Activation Setting
+	Gui, Add, DropDownList, x465 y267 w80 AltSubmit choose1 vBEnableDoubleClick, Disable|When Running|When Not Running|Any Time
     GuiControl, Hide, BEnableLabel  
     GuiControl, Hide, BEnableDoubleClick  
     
     /*
-    Gui Add, Button, x25 y197 h20 gSet_ForceMove, 强制移动设置
-    Gui Add, Button, x125 y197 h20 gSet_PickUp, 连点拾取设置
+    Gui Add, Button, x25 y197 h20 gSet_ForceMove, Force Move Settings
+    Gui Add, Button, x125 y197 h20 gSet_PickUp, Continuous Pickup Settings
     */
-    Gui Add, Button, x395 y177 h18 w60 gSet_ForceMove, 强移设置
-    Gui Add, Button, x470 y177 h18 w60 gSet_PickUp, 连点设置
+    Gui Add, Button, x395 y177 h18 w60 gSet_ForceMove, Force Move Settings
+    Gui Add, Button, x470 y177 h18 w60 gSet_PickUp, Continuous Click Settings
     ;--------------------------------------------------------------------------
     
     
-    v_readme_mbutton := "中`r`n键`r`n切`r`n换`r`n功`r`n能`r`n选`r`n择" 
+    v_readme_mbutton := "Middle`r`nButton`r`nSwitch`r`nFunction`r`nSelection" 
     v_readme_mbutton := v_readme_mbutton "`r`n`"
     v_readme_mbutton := v_readme_mbutton "`r`n`"
     v_readme_mbutton := v_readme_mbutton "`r`n`"
     v_readme_mbutton := v_readme_mbutton "`r`n`"
     v_readme_mbutton := v_readme_mbutton "`r`n`"
     v_readme_mbutton := v_readme_mbutton "`r`n`"
-    v_readme_mbutton := v_readme_mbutton "`r`n`  (用ctrl键选择或取消)"
+    v_readme_mbutton := v_readme_mbutton "`r`n`  (Use Ctrl to select or deselect)"
     Gui, Add, Text, x557 y285 h20, %v_readme_mbutton%
-    Gui, Add, ListBox, x575 y285 w120 h170 Multi AltSubmit choose0 vBMButton, 引导键1启动/停止|引导键2启动/停止|左键自动/停止|右键自动/停止|1-键自动/停止|2-键自动/停止|3-键自动/停止|4-键自动/停止 |自定义宏1启/停|自定义宏2启/停|自定义宏3启/停|自定义宏4启/停|自定义宏5启/停|第5技能启/停
+    Gui, Add, ListBox, x575 y285 w120 h170 Multi AltSubmit choose0 vBMButton, Channel Key1 On/Off|Channel Key2 On/Off|Left Auto/Stop|Right Auto/Stop|Skill1 Auto/Stop|Skill2 Auto/Stop|Skill3 Auto/Stop|Skill4 Auto/Stop |Custom Macro1 On/Off|Custom Macro2 On/Off|Custom Macro3 On/Off|Custom Macro4 On/Off|Custom Macro5 On/Off|Skill5 On/Off
     
-    Gui, Add, Text, x580 y475 h20, 中键切换模式选择：
-    Gui, Add, DropDownList, x515 y495 W180 AltSubmit choose1 vBMButtonRelease, 点击中键切换，再点一次恢复|按住中键切换，松开中键恢复
+    Gui, Add, Text, x580 y475 h20, Middle Button Switch Mode:
+    Gui, Add, DropDownList, x515 y495 W180 AltSubmit choose1 vBMButtonRelease, Click middle to switch, click again to restore|Hold middle to switch, release middle to restore
     ;--------------------------------------------------------------------------
     
-    ;Gui, Add, Text, x320 y260 w60 h20, 自启
-    Gui, Add, Text, x25 y340 w70 h20, 自动启动宏1
+    ;Gui, Add, Text, x320 y260 w60 h20, Auto Start
+    Gui, Add, Text, x25 y340 w70 h20, Auto Start Macro1
     Gui, Add, CheckBox, x100 y335 h20 vBMarcoAS1,
     
-    Gui, Add, Text, x130 y340 w70 h20, 自动启动宏2
+    Gui, Add, Text, x130 y340 w70 h20, Auto Start Macro2
     Gui, Add, CheckBox, x205 y335 h20 vBMarcoAS2,
     
-    Gui, Add, Text, x235 y340 w70 h20, 自动启动宏3
+    Gui, Add, Text, x235 y340 w70 h20, Auto Start Macro3
     Gui, Add, CheckBox, x310 y335 h20 vBMarcoAS3,
     
-    Gui, Add, Text, x340 y340 w70 h20, 自动启动宏4
+    Gui, Add, Text, x340 y340 w70 h20, Auto Start Macro4
     Gui, Add, CheckBox, x415 y335 h20 vBMarcoAS4,
     
-    Gui, Add, Text, x455 y340 w70 h20, 自动启动宏5
+    Gui, Add, Text, x455 y340 w70 h20, Auto Start Macro5
     Gui, Add, CheckBox, x530 y335 h20 vBMarcoAS5,
     
     ;--------------------------------------------------------------------------
     
     Gui, Add, DropDownList, x25 y375 w80 AltSubmit choose1 vBChooseMarco, %marceItem%
-    Gui Add, Button, x110 y374 h20 gSet_UserMarco, 点击进行设置
-    Gui, Add, Text, x200 y379 h20, 自定义热键，不勾选单次时，按一次开始再按一次停止宏
+    Gui Add, Button, x110 y374 h20 gSet_UserMarco, Click to Configure
+    Gui, Add, Text, x200 y379 h20, Custom Hotkey. When not checked as single, press once to start, press again to stop macro
     
     ;--------------------------------------------------------------------------
 
-    ; 热键输入框 + 函数下拉框 + 注册按钮
-    Gui Add, Text, x25 y417 w50, 热键:
-    Gui Add, Edit, x62 y414 w40 h20 vHotkey, W          ; 热键输入框（默认F1）
+    ; Hotkey input box + function dropdown + register button
+    Gui Add, Text, x25 y417 w50, Hotkey:
+    Gui Add, Edit, x62 y414 w40 h20 vHotkey, W          ; Hotkey input box (default F1)
 
-    ;Gui Add, Text, x152 y12 w50, 函数:
-    ;Gui Add, DropDownList, x202 y10 w100 vFuncName, 函数A|函数B|函数C  ; 下拉函数
+    ;Gui Add, Text, x152 y12 w50, Function:
+    ;Gui Add, DropDownList, x202 y10 w100 vFuncName, Function A|Function B|Function C  ; Dropdown function
     Gui, Add, DropDownList, x112 y415 w80 AltSubmit choose1 vFuncName, %marceItem%
 
-    Gui Add, Button, x200 y414 w80 h20 gHotKeyRegister, 注册热键  ; 注册按钮
+    Gui Add, Button, x200 y414 w80 h20 gHotKeyRegister, Register Hotkey  ; Register button
     
     ;--------------------------------------------------------------------------
-    tip_info_1 := "当左/右键按住设置成自定义宏X时，可在左/右键松开中选择自定义宏Y，以对应关闭宏X中内容"
-    tip_info_1 := tip_info_1 "`r`n# 如：左键按住（宏1）开启了2号键连点，左键松开（宏2）关闭鼠标连点；"
-    tip_info_1 := tip_info_1 "`r`n# 如：左键按住（宏1）按下shift键，左键松开（宏2）松开shift键；"
-    tip_info_1 := tip_info_1 "`r`n# 如：左键自定义宏中点击技能1，左键松开可设为无操作；"
+    tip_info_1 := "When left/right button hold is set to custom macro X, you can select custom macro Y in left/right button release to close macro X content"
+    tip_info_1 := tip_info_1 "`r`n# Example: Left button hold (Macro1) opens Skill 2 continuous, left button release (Macro2) closes mouse continuous;"
+    tip_info_1 := tip_info_1 "`r`n# Example: Left button custom macro presses shift, left button release (Macro2) releases shift;"
+    tip_info_1 := tip_info_1 "`r`n# Example: Left button custom macro clicks Skill1, left button release can be set to no action;"
     Gui, Add, Text, x25 y455 h50, %tip_info_1%
     
     ;--------------------------------------------------------------------------
-    Gui, Add, CheckBox, x225 y490 h20 vBCancelDC, 双击中键自动骑马
+    Gui, Add, CheckBox, x225 y490 h20 vBCancelDC, Double click middle button to auto mount
     GuiControl, Hide, BCancelDC
-    Gui, Add, CheckBox, x25 y490 w70 h20 vBAutoPotion, 自动喝药 ;vBAutoPotion
+    Gui, Add, CheckBox, x25 y490 w70 h20 vBAutoPotion, Auto Potion ;vBAutoPotion
     GuiControl, Hide, BAutoPotion
     Gui, Add, Edit, x100 y490 w35 h20 Limit5 Number vBPotionDelay1, 100 ;vBPotionDelay1
     GuiControl, Hide, BPotionDelay1
-    ;Gui, Add, Text, x140 y493 h50, "药水键为Q，懒得做，不是Q的请勿使用"
+    ;Gui, Add, Text, x140 y493 h50, "Potion key is Q, lazy to make, don't use if not Q"
     
-    Gui, Add, CheckBox, x25 y510 h20 vBEnableStatus gEnableStatusChange, 显示宏运行状态（针对部分BD不自动按键，不能直观看出是宏是否运行的情况） 
+    Gui, Add, CheckBox, x25 y510 h20 vBEnableStatus gEnableStatusChange, Show Macro Running Status (for some BD not auto press, can't intuitively see if macro is running) 
     ;--------------------------------------------------------------------------
     
-    ;此参数用作侧键2功能更换
-    Gui, Add, CheckBox, x25 y530 h20 vBEnableGreatRift, 暂不启用 ;鼠标侧键2功能，不勾选：左键连点拾取； 勾选：强移
+    ;This parameter is used for side button 2 function replacement
+    Gui, Add, CheckBox, x25 y530 h20 vBEnableGreatRift, Temporarily Disabled ;Mouse side button 2 function, unchecked: left continuous pickup; checked: force move
     GuiControl, Hide, BEnableGreatRift
     ;--------------------------------------------------------------------------
     
-    Gui, Add, CheckBox, x25 y550 h20 vBEnableMouseGesture, 启用鼠标手势（按住右键：向下再向右再向上滑动 -打开地图） 
+    Gui, Add, CheckBox, x25 y550 h20 vBEnableMouseGesture, Enable Mouse Gesture (Hold right button: down then right then up slide - open map) 
     GuiControl, Hide, BEnableMouseGesture
     ;--------------------------------------------------------------------------
     
-    ;Gui Add, Button, x260 y137 h20 gSet_ForceMove, 强制移动设置
-    ;Gui Add, Button, x260 y167 h20 gSet_PickUp, 连点拾取设置
+    ;Gui Add, Button, x260 y137 h20 gSet_ForceMove, Force Move Settings
+    ;Gui Add, Button, x260 y167 h20 gSet_PickUp, Continuous Pickup Settings
     ;--------------------------------------------------------------------------
     
-    Gui, Add, Text, x575 y523 h20, 全局鼠标延迟：
+    Gui, Add, Text, x575 y523 h20, Global Mouse Delay:
     Gui, Add, Edit, x660 y520 w20 h20 Limit2 Number vBGlobalMouseDelay, 10
-    ;Gui, Add, Text, x385 y280 h20, （建议5）
+    ;Gui, Add, Text, x385 y280 h20, (Recommended 5)
 
-    Gui, Add, Text, x575 y553 h20, 全局键盘延迟：
+    Gui, Add, Text, x575 y553 h20, Global Keyboard Delay:
     Gui, Add, Edit, x660 y550 w20 h20 Limit2 Number vBGlobalKeyDelay, 10
-   ; Gui, Add, Text, x385 y310 h20, （建议5）
+   ; Gui, Add, Text, x385 y310 h20, (Recommended 5)
     
     ;--------------------------------------------------------------------------
    
-	Gui, Add, GroupBox, x15 y620 w690 h235, 详细说明，请仔细阅读！
-    v_readme := "# 开启或关闭宏：鼠标侧健1" 
+	Gui, Add, GroupBox, x15 y620 w690 h235, Detailed Instructions, Please Read Carefully!
+    v_readme := "# Toggle Macro: Mouse Side Button 1" 
     v_readme := v_readme "`r`n# -------------------------------------------------------------------------------------------"
-    v_readme := v_readme "`r`n# 【建议按键】：设置Z为强移键；[.]键为强制站立键；1,2,3,4对应4个技能，space闪避；"
-    v_readme := v_readme "`r`n# 【建议按键】：按键都有两个位置，上述按键设置只要保证为其中之一，即可直接使用作者的配置；"
-    v_readme := v_readme "`r`n# 【建议按键】：将战斗下马键设为9,下马设为0。（原有按键要取消掉，否则骑马时容易冲突自动下马）"
-    v_readme := v_readme "`r`n# 【默认按键】：鼠标侧键2，D4中为上下马，LE中为按住ctrl+右键"
-    v_readme := v_readme "`r`n# 【保存设置】：主界面中设置后必须点击BD保存按键才生效，点击弹出的二级窗口关闭即保存；"
-    v_readme := v_readme "`r`n# 【中键功能】：中键为引导及各技能键释放/停止的切换开关；按住ctrl键可多选或者取消选择；"
-    v_readme := v_readme "`r`n# -----【左右键功能】：点一次左/右键，等同于左/右键按下 -> 松开；---------"
-    v_readme := v_readme "`r`n#  * 可设置为：强制移动、连点拾取、释放技能、或执行自定义宏中的内容；"
-    v_readme := v_readme "`r`n#  * 站立选项指强制原地释放某技能；仅对选择释放技能时生效；"
-    v_readme := v_readme "`r`n#  * 单次选项指仅释放某技能或某自定义宏中的内容一次；"
-    v_readme := v_readme "`r`n# -----【自定义宏功能】：-------------------------------------------------"
-    v_readme := v_readme "`r`n#  * 复杂的自定义语句，可在外部编辑器写好后，再每步骤复制一行；"
-    v_readme := v_readme "`r`n# -----【其他事项】：-----------------------------------------------------"
-    v_readme := v_readme "`r`n#  * 按T，M，I，S，ENTER这些功能键，或切换到其它程序时，会自动停止宏；"
-    v_readme := v_readme "`r`n#  * 多BD使用：可拷贝多个cfg文件重命令，单独设置保存，可动态切换；"
+    v_readme := v_readme "`r`n# [Recommended Keys]: Set Z as force move key; [.] key as force stand still key; 1,2,3,4 correspond to 4 skills, space dodge;"
+    v_readme := v_readme "`r`n# [Recommended Keys]: Each key has two positions, as long as the above key settings guarantee one of them, you can directly use author's config;"
+    v_readme := v_readme "`r`n# [Recommended Keys]: Set mount/dismount key to 9, dismount to 0. (Cancel original keys, otherwise easy conflict auto dismount when mounted)"
+    v_readme := v_readme "`r`n# [Default Key]: Mouse side button 2, in D4 for mount/dismount, in LE for hold ctrl+right button"
+    v_readme := v_readme "`r`n# [Save Settings]: After setting in main interface must click BD Save button to take effect, close the popped secondary window to save;"
+    v_readme := v_readme "`r`n# [Middle Button Function]: Middle button is channel and each skill release/stop toggle switch; Hold Ctrl to multi-select or deselect;"
+    v_readme := v_readme "`r`n# -----【Left/Right Button Function】: Click once left/right button = left/right button press -> release;---------"
+    v_readme := v_readme "`r`n#  * Can set to: Force Move, Continuous Pickup, Release Skill, or execute custom macro content;"
+    v_readme := v_readme "`r`n#  * Stand still option means force release certain skill in place; Only effective when release skill selected;"
+    v_readme := v_readme "`r`n#  * Single option means only release certain skill or custom macro content once;"
+    v_readme := v_readme "`r`n# -----【Custom Macro Function】:-------------------------------------------------"
+    v_readme := v_readme "`r`n#  * Complex custom statements, write in external editor then copy line by line;"
+    v_readme := v_readme "`r`n# -----【Other Notes】:-----------------------------------------------------"
+    v_readme := v_readme "`r`n#  * Press T, M, I, S, ENTER these function keys, or switch to other programs, will auto stop macro;"
+    v_readme := v_readme "`r`n#  * Multi BD use: Copy multiple cfg files and rename, set separately, can dynamic switch;"
     ;v_readme := v_readme "`r`n# -----------------------------------------------------------------------"
     Gui, Add, Text, x25 y640 w650 h200, %v_readme%
     
     /*
-    ;;;;;;;;;自动设置选项卡内容;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;Auto Settings Tab Content;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     Gui, Tab, 2
     
     Gui, Add, GroupBox, x15 y24 w690 h560, 
     
-    Gui, Add, Text, x25 y50 w60 h20, 显示模式：
-    Gui, Add, DropDownList, x85 y47 AltSubmit choose1 vBDispMode, 窗口模式|全屏或窗口全屏  ;vBDispMode
+    Gui, Add, Text, x25 y50 w60 h20, Display Mode:
+    Gui, Add, DropDownList, x85 y47 AltSubmit choose1 vBDispMode, Windowed|Fullscreen or Window Fullscreen  ;vBDispMode
     
-    Gui, Add, Text, x25 y80 w60 h20, 执行模式：
-    Gui, Add, DropDownList, x85 y77 w100 AltSubmit choose1 vBEamon, 测试位置|实际操作  ;vBEamon
+    Gui, Add, Text, x25 y80 w60 h20, Execution Mode:
+    Gui, Add, DropDownList, x85 y77 w100 AltSubmit choose1 vBEamon, Test Position|Actual Operation  ;vBEamon
     
-    Gui, Add, Text, x25 y110 w60 h20, 鼠键延迟：
+    Gui, Add, Text, x25 y110 w60 h20, Mouse Key Delay:
     Gui, Add, Edit, x85 y107 w40 h20 Limit3 Number vBMouseDelay, 7 ;vBMouseDelay
     
-    Gui, Add, Text, x25 y150 w60 h20, 巅峰调整：
-    Gui, Add, CheckBox, x85 y146 w40 h20 vBAttributeAdjust, 启用  
-    Gui, Add, Text, x25 y180 w60 h20, 主要属性：
+    Gui, Add, Text, x25 y150 w60 h20, Peak Adjustment:
+    Gui, Add, CheckBox, x85 y146 w40 h20 vBAttributeAdjust, Enable  
+    Gui, Add, Text, x25 y180 w60 h20, Main Attribute:
     Gui, Add, Edit, x85 y177 w40 h20 Limit2 Number vBMainProp, 0  
-    Gui, Add, Text, x125 y180 w60 h20, （百点）
-    Gui, Add, Text, x25 y210 w60 h20, 体能属性：
+    Gui, Add, Text, x125 y180 w60 h20, (Hundred Points)
+    Gui, Add, Text, x25 y210 w60 h20, Stamina Attribute:
     Gui, Add, Edit, x85 y207 w40 h20 Limit2 Number vBStam, 0  
-    Gui, Add, Text, x125 y210 w60 h20, （百点）
-    Gui, Add, Text, x25 y240 w60 h20, 移动速度：
+    Gui, Add, Text, x125 y210 w60 h20, (Hundred Points)
+    Gui, Add, Text, x25 y240 w60 h20, Movement Speed:
     Gui, Add, Edit, x85 y237 w40 h20 Limit2 Number vBSpeed, 0  
-    Gui, Add, Text, x125 y240 w60 h20, （点）
-    Gui, Add, Text, x25 y270 w60 h20, 能量上限：
+    Gui, Add, Text, x125 y240 w60 h20, (Points)
+    Gui, Add, Text, x25 y270 w60 h20, Energy Cap:
     Gui, Add, Edit, x85 y267 w40 h20 Limit2 Number vBEnergy, 0  
-    Gui, Add, Text, x125 y270 w60 h20, （点）
+    Gui, Add, Text, x125 y270 w60 h20, (Points)
     
-    Gui, Add, Text, x25 y300 w60 h20, 范围伤：
-    Gui, Add, CheckBox, x85 y296 w40 h20 vBRangDamage, 开启 
+    Gui, Add, Text, x25 y300 w60 h20, Range Damage:
+    Gui, Add, CheckBox, x85 y296 w40 h20 vBRangDamage, Enable 
     
-    Gui, Add, Text, x25 y340 w90 h20, 宝石升级次数：
+    Gui, Add, Text, x25 y340 w90 h20, Gem Upgrade Count:
     Gui, Add, Edit, x115 y337 w40 h20 Limit1 Number vBUpgradeCount, 4  
     
-    Gui, Add, Text, x25 y460 h20, 分解区设置
-    Gui, Add, DropDownList, x95 y457 w120 AltSubmit choose1 vBSmashType, 逐行分解（单格）|隔行分解（双格）
+    Gui, Add, Text, x25 y460 h20, Decompose Area Settings
+    Gui, Add, DropDownList, x95 y457 w120 AltSubmit choose1 vBSmashType, Line by Line (Single Grid)|Every Other Line (Double Grid)
     
-    Gui, Add, Text, x25 y490 h20, 保护区设置
-    Gui, Add, DropDownList, x95 y487 w120 AltSubmit choose1 vBProtectZone, 最后5格|最后4格|最后3格|最后2格|最后1格|无
+    Gui, Add, Text, x25 y490 h20, Protection Area Settings
+    Gui, Add, DropDownList, x95 y487 w120 AltSubmit choose1 vBProtectZone, Last 5 Grids|Last 4 Grids|Last 3 Grids|Last 2 Grids|Last 1 Grid|None
     
-    Gui, Add, Text, x25 y520 h20, 鼠标滚轮下滑（或F5），自动分解、魔盒功能、赌博、升宝石回城、巅峰加点、附魔，开启大秘境等。
+    Gui, Add, Text, x25 y520 h20, Mouse Wheel Down (or F5), Auto Decompose, Magic Box, Gambling, Gem Upgrade Town Portal, Peak Points, Enchant, Open Greater Rift etc.
 
-    Gui, Add, Text, x25 y550 h20, 自动关闭所有弹出窗口：
-    Gui, Add, CheckBox, x160 y546 w40 h20 vBAutoCloseWin, 启用  
+    Gui, Add, Text, x25 y550 h20, Auto Close All Pop-up Windows:
+    Gui, Add, CheckBox, x160 y546 w40 h20 vBAutoCloseWin, Enable  
     GuiControl, Disable, BAutoCloseWin
     
-    Gui, Add, Text, x260 y50 h20, 物品栏左上X：
+    Gui, Add, Text, x260 y50 h20, Inventory Top Left X:
     Gui, Add, Edit, x340 y47 w40 h20 Limit5 Number vBItemSX, 0.728 ;vBItemSX
     
-	Gui, Add, Text, x260 y80 h20, 物品栏左上Y：
+	Gui, Add, Text, x260 y80 h20, Inventory Top Left Y:
     Gui, Add, Edit, x340 y77 w40 h20 Limit5 Number vBItemSY, 0.511 ;vBItemSY
     
-    Gui, Add, Text, x260 y110 h20, 物品栏右下X：
+    Gui, Add, Text, x260 y110 h20, Inventory Bottom Right X:
     Gui, Add, Edit, x340 y107 w40 h20 Limit5 Number vBItemEX, 0.991 ;vBItemEX
     
-	Gui, Add, Text, x260 y140 h20, 物品栏右下Y：
+	Gui, Add, Text, x260 y140 h20, Inventory Bottom Right Y:
     Gui, Add, Edit, x340 y137 w40 h20 Limit5 Number vBItemEY, 0.79 ;vBItemEY
     
-    Gui, Add, Text, x260 y170 h20, 橙装分解坐标(X/Y）：
+    Gui, Add, Text, x260 y170 h20, Legendary Decompose Coord (X/Y）:
 	Gui, Add, Edit, x380 y167 w40 h20  Limit5 Number vBOrangePosX, 0.088 
     Gui, Add, Edit, x430 y167 w40 h20 Limit5 Number vBOrangePosY, 0.264 
     
-	Gui, Add, Text, x260 y200 h20, 白装分解坐标(X/Y）：
+	Gui, Add, Text, x260 y200 h20, White Decompose Coord (X/Y）:
 	Gui, Add, Edit, x380 y197 w40 h20  Limit5 Number vBWhitePosX, 0.135 
     Gui, Add, Edit, x430 y197 w40 h20 Limit5 Number vBWhitePosY, 0.268 
     
-    Gui, Add, Text, x260 y230 h20, 蓝装分解坐标(X/Y）：
+    Gui, Add, Text, x260 y230 h20, Blue Decompose Coord (X/Y）:
 	Gui, Add, Edit, x380 y227 w40 h20  Limit5 Number vBBluePosX, 0.169
     Gui, Add, Edit, x430 y227 w40 h20 Limit5 Number vBBluePosY, 0.268 
     
-    Gui, Add, Text, x260 y260 h20, 黄装分解坐标(X/Y）：
+    Gui, Add, Text, x260 y260 h20, Rare Decompose Coord (X/Y）:
 	Gui, Add, Edit, x380 y257 w40 h20  Limit5 Number vBYellowPosX, 0.203 
     Gui, Add, Edit, x430 y257 w40 h20 Limit5 Number vBYellowPosY, 0.268 
     
-    Gui, Add, Text, x260 y290 h20, 放入材料坐标(X/Y）：
+    Gui, Add, Text, x260 y290 h20, Put Material Coord (X/Y）:
 	Gui, Add, Edit, x380 y287 w40 h20  Limit5 Number vBPutPosX, 0.374 
     Gui, Add, Edit, x430 y287 w40 h20 Limit5 Number vBPutPosY, 0.778 
     
-	Gui, Add, Text, x260 y320 h20, 重塑按钮坐标(X/Y）：
+	Gui, Add, Text, x260 y320 h20, Reshape Button Coord (X/Y）:
 	Gui, Add, Edit, x380 y317 w40 h20  Limit5 Number vBRebuildPosX, 0.125 
     Gui, Add, Edit, x430 y317 w40 h20 Limit5 Number vBRebuildPosY, 0.765 
     
-    Gui, Add, Text, x260 y350 h20, 往上一页坐标(X/Y）：
+    Gui, Add, Text, x260 y350 h20, Previous Page Coord (X/Y）:
 	Gui, Add, Edit, x380 y347 w40 h20  Limit5 Number vBPrePosX, 0.303
     Gui, Add, Edit, x430 y347 w40 h20 Limit5 Number vBPrePosY, 0.778 
     
-    Gui, Add, Text, x260 y380 h20, 往下一页坐标(X/Y）：
+    Gui, Add, Text, x260 y380 h20, Next Page Coord (X/Y）:
 	Gui, Add, Edit, x380 y377 w40 h20  Limit5 Number vBNextPosX, 0.445 
     Gui, Add, Edit, x430 y377 w40 h20 Limit5 Number vBNextPosY, 0.778 
     
-    Gui Add, Button, x480 y377 h20 gRestore_AutoSet, 点击恢复预设值
+    Gui Add, Button, x480 y377 h20 gRestore_AutoSet, Click to Restore Preset Values
     
-    Gui, Add, GroupBox, x15 y580 w690 h275, 详细说明，请仔细阅读！
-    v_readme := "# 适用于16:9分辨率（如标准720P，1080P，2K，4K），其它分辨率可使用窗口模式再将长宽拉至差不多的比例；" 
+    Gui, Add, GroupBox, x15 y580 w690 h275, Detailed Instructions, Please Read Carefully!
+    v_readme := "# Suitable for 16:9 resolution (standard 720P, 1080P, 2K, 4K), other resolutions can use windowed mode and stretch to similar ratio;" 
     v_readme := v_readme "`r`n# ----------------------------------------------------------------------------------------------"
-    v_readme := v_readme "`r`n# 【自动】：鼠标滚轮下（或F5）为一键全自动功能，必须先打开至对应功能的界面再按下"
-    v_readme := v_readme "`r`n# * 自动关闭所有弹出窗口 （必须设置按键绑定->[关闭所有打开的窗口]设为F10）；"
-    v_readme := v_readme "`r`n# * 一键全自动功能包括分解、丢装、魔盒、赌博、升宝石回城、巅峰切换、附魔等；"
-    v_readme := v_readme "`r`n# * 自动升宝石+回城时，选中需升级的宝石，将鼠标移到空地处，滚轮下滑，默认点4次宝石，可修改次数；"
-    v_readme := v_readme "`r`n# * 自动开大米（第一次需选手动选层数开启），鼠标点击大米石碑，鼠标滚轮下滑；"
+    v_readme := v_readme "`r`n# [Auto]: Mouse wheel down (or F5) is one-key full auto function, must first open corresponding function interface then press"
+    v_readme := v_readme "`r`n# * Auto close all pop-up windows (must set keybind -> [Close all open windows] to F10);"
+    v_readme := v_readme "`r`n# * One-key full auto function includes decompose, discard, magic box, gambling, gem upgrade town portal, peak switch, enchant etc.;"
+    v_readme := v_readme "`r`n# * Auto gem upgrade + town portal, select gem to upgrade, move mouse to empty space, wheel down, default click gem 4 times, can modify count;"
+    v_readme := v_readme "`r`n# * Auto open Greater Rift (first time need manual select layer), mouse click rift stele, mouse wheel down;"
     v_readme := v_readme "`r`n# ----------------------------------------------------------------------------------------------"
-    v_readme := v_readme "`r`n# 【手动】：F5如果自动识别场景不准确，可通过F9,F6,F7,F8来分别使用（见下文）；"
-    v_readme := v_readme "`r`n# * F4用于中途停止F5(对应的F9,F6,F7,F8)功能；"
-    v_readme := v_readme "`r`n# * F9为右键连点，用于城内赌博；(原F3功能，为避免与导航F3冲突改为F9)"
-    v_readme := v_readme "`r`n# * F6为使用魔盒功能,请先切换至魔盒对应页面（支持一键升黄装和转换材料）；"
-    v_readme := v_readme "`r`n# * F7键为一键丢弃，打开背包(I)，再按F7；"
-    v_readme := v_readme "`r`n# * F8键为一键分解，先点击铁匠，并切换到分解的界面，再按F8；"
+    v_readme := v_readme "`r`n# [Manual]: If F5 auto scene recognition inaccurate, can use F9,F6,F7,F8 separately (see below);"
+    v_readme := v_readme "`r`n# * F4 used to stop F5 (corresponding F9,F6,F7,F8) function midway;"
+    v_readme := v_readme "`r`n# * F9 is right continuous click, used for town gambling; (original F3 function, changed to F9 to avoid conflict with navigation F3)"
+    v_readme := v_readme "`r`n# * F6 is magic box function, please first switch to magic box page (supports one-key upgrade rare and convert material);"
+    v_readme := v_readme "`r`n# * F7 key is one-key discard, open inventory (I), then press F7;"
+    v_readme := v_readme "`r`n# * F8 key is one-key decompose, first click blacksmith, switch to decompose interface, then press F8;"
     v_readme := v_readme "`r`n# ----------------------------------------------------------------------------------------------"
-    v_readme := v_readme "`r`n# 【注意】："
-    v_readme := v_readme "`r`n# * 全屏/窗口全屏/窗口模式，必须准确选择；"
-    v_readme := v_readme "`r`n# * 鼠键延迟受网速及硬件影响，建议不低于2；值越低操作越快（有可能失败）；"
-    v_readme := v_readme "`r`n# * 此功能根椐屏幕坐标相对于游戏窗口的比例来定位，可自行调整（不建议）；可恢复默认值；"
-    v_readme := v_readme "`r`n# * ！！！！！进行实际操作前请先测试位置看看是否准确，不准确请先调整好后再使用；"    
+    v_readme := v_readme "`r`n# [Note]:"
+    v_readme := v_readme "`r`n# * Fullscreen/Window Fullscreen/Windowed, must select accurately;"
+    v_readme := v_readme "`r`n# * Mouse key delay affected by network speed and hardware, recommend not lower than 2; lower value faster operation (may fail);"
+    v_readme := v_readme "`r`n# * This function locates based on screen coord relative to game window ratio, can adjust yourself (not recommended); Can restore default;"
+    v_readme := v_readme "`r`n# * ！！！！！Before actual operation please first test position to see if accurate, if not accurate please adjust first before use;"    
     v_readme := v_readme "`r`n# ----------------------------------------------------------------------------------------------"
 
     Gui, Add, Text, x25 y600 w650 h240, %v_readme%
     ;--------------------------------------------------------------------------
     */
 
-    ;;;;;;;;;D2R内容;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;D2R Content;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     Gui, Tab, 2
 
     Gui, Add, GroupBox, x15 y24 w690 h560, 
 
-    ;Gui, Add, Text, x25 y50 w60 h20, 窗口1：
+    ;Gui, Add, Text, x25 y50 w60 h20, Window1:
     ;Gui, Add, Edit, x85 y47 w40 h20 Limit10 Number vBD2RWIN1, 0  
-    Gui, Add, Text, x25 y50 w60 h20, 顺序
-    Gui, Add, Text, x85 y50 w60 h20, 句柄
-    Gui, Add, Text, x185 y50 w60 h20, 加入
+    Gui, Add, Text, x25 y50 w60 h20, Order
+    Gui, Add, Text, x85 y50 w60 h20, Handle
+    Gui, Add, Text, x185 y50 w60 h20, Join
 
-    Gui, Add, Text, x25 y80 w60 h20, 窗口1：
+    Gui, Add, Text, x25 y80 w60 h20, Window1:
     Gui, Add, Edit, x85 y77 w80 h20 Limit10 Number vBD2RWIN1, 0  
 	Gui, Add, CheckBox, x185 y77 w40 h20 vBD2RJoin1, ;
   
-    Gui, Add, Text, x25 y110 w60 h20, 窗口2：
+    Gui, Add, Text, x25 y110 w60 h20, Window2:
     Gui, Add, Edit, x85 y107 w80 h20 Limit10 Number vBD2RWIN2, 0  
 	Gui, Add, CheckBox, x185 y107 w40 h20 vBD2RJoin2, ;
 
-    Gui, Add, Text, x25 y140 w60 h20, 窗口3：
+    Gui, Add, Text, x25 y140 w60 h20, Window3:
     Gui, Add, Edit, x85 y137 w80 h20 Limit10 Number vBD2RWIN3, 0  
 	Gui, Add, CheckBox, x185 y137 w40 h20 vBD2RJoin3, ;
 
-    Gui, Add, Text, x25 y170 w60 h20, 窗口4：
+    Gui, Add, Text, x25 y170 w60 h20, Window4:
     Gui, Add, Edit, x85 y167 w80 h20 Limit10 Number vBD2RWIN4, 0  
 	Gui, Add, CheckBox, x185 y167 w40 h20 vBD2RJoin4, ;
 
-    Gui, Add, Text, x25 y200 w60 h20, 窗口5：
+    Gui, Add, Text, x25 y200 w60 h20, Window5:
     Gui, Add, Edit, x85 y197 w80 h20 Limit10 Number vBD2RWIN5, 0  
 	Gui, Add, CheckBox, x185 y197 w40 h20 vBD2RJoin5, ;
 
-    Gui, Add, Text, x25 y230 w60 h20, 窗口6：
+    Gui, Add, Text, x25 y230 w60 h20, Window6:
     Gui, Add, Edit, x85 y227 w80 h20 Limit10 Number vBD2RWIN6, 0  
 	Gui, Add, CheckBox, x185 y227 w40 h20 vBD2RJoin6, ;
 
-    Gui, Add, Text, x25 y260 w60 h20, 窗口7：
+    Gui, Add, Text, x25 y260 w60 h20, Window7:
     Gui, Add, Edit, x85 y257 w80 h20 Limit10 Number vBD2RWIN7, 0  
 	Gui, Add, CheckBox, x185 y257 w40 h20 vBD2RJoin7, ;
 
-    Gui, Add, Text, x25 y290 w60 h20, 窗口8：
+    Gui, Add, Text, x25 y290 w60 h20, Window8:
     Gui, Add, Edit, x85 y287 w80 h20 Limit10 Number vBD2RWIN8, 0  
 	Gui, Add, CheckBox, x185 y287 w40 h20 vBD2RJoin8, ;
 
-    Gui Add, Button, x25 y325 h18 w60 gGet_D2R_WIN_ALL, 获取窗口
+    Gui Add, Button, x25 y325 h18 w60 gGet_D2R_WIN_ALL, Get Windows
 
-    ;Gui Add, Button, x25 y360 h18 w120 gGet_D2R_WIN_ALL1, 运行D2R快捷方式
-    Gui, Add, Button, x25 y360 w100 h20 gSelectD2RShortcuts, 选择快捷方式
+    ;Gui Add, Button, x25 y360 h18 w120 gGet_D2R_WIN_ALL1, Run D2R Shortcut
+    Gui, Add, Button, x25 y360 w100 h20 gSelectD2RShortcuts, Select Shortcuts
     Gui, Add, ListBox, x25 y390 w300 h180 vBD2RShortCutList Multi
-    Gui, Add, Button, x345 y390 gD2RMoveUp, 上移
-    Gui, Add, Button, x345 y420 gD2RMoveDown, 下移
+    Gui, Add, Button, x345 y390 gD2RMoveUp, Move Up
+    Gui, Add, Button, x345 y420 gD2RMoveDown, Move Down
     Gui, Add, Edit, x400 y390 w20 h20 vBD2RBroswserSetPos, 5
-    Gui, Add, Text, x425 y393 w200 h20, 输入默认浏览器设置项在几项
+    Gui, Add, Text, x425 y393 w200 h20, Input default browser setting item number
     Gui, Add, Edit, x400 y420 w100 h20 vBD2RBroswserListPos, 1,2,3,4,5,6,7,8
-    Gui, Add, Text, x505 y423 w200 h20, 浏览器顺序（与快捷方式一致）
-    Gui, Add, Edit, x345 y460 w320 h20 vBD2RBroswserListName, edge,chrome,火狐,360浏览,Q浏览
-    Gui, Add, Text, x345 y485 w320 h20, （WIN11浏览器专用，按快捷方式顺序填写，以","号分开）
+    Gui, Add, Text, x505 y423 w200 h20, Browser order (consistent with shortcuts)
+    Gui, Add, Edit, x345 y460 w320 h20 vBD2RBroswserListName, edge,chrome,firefox,360,Q
+    Gui, Add, Text, x345 y485 w320 h20, (WIN11 browser specific, fill in order of shortcuts, separated by ",")
     ;/*
-    Gui, Add, Button, x140 y360 w80 h20 gMultiLaunchD2R, 启动国际服
-    Gui, Add, Button, x235 y360 w80 h20 gMultiLaunchD2RCN, 启动国服
-    Gui, Add, Button, x330 y360 w100 h20 gMultiLaunchD2RCNW11, 启动国服win11  
+    Gui, Add, Button, x140 y360 w80 h20 gMultiLaunchD2R, Launch International
+    Gui, Add, Button, x235 y360 w80 h20 gMultiLaunchD2RCN, Launch CN Server
+    Gui, Add, Button, x330 y360 w100 h20 gMultiLaunchD2RCNW11, Launch CN Server Win11  
     ;*/
     /*
-    Gui, Add, Button, x140 y360 w80 h20 gMultiLaunchD2R, 启动D2R
-    Gui, Add, Button, x235 y360 w80 h20 vBMultiLaunchD2RCN gMultiLaunchD2RCN, 启动国服
+    Gui, Add, Button, x140 y360 w80 h20 gMultiLaunchD2R, Launch D2R
+    Gui, Add, Button, x235 y360 w80 h20 vBMultiLaunchD2RCN gMultiLaunchD2RCN, Launch CN Server
     GuiControl, Hide, BMultiLaunchD2RCN
-    Gui, Add, Button, x330 y360 w100 h20 vBMultiLaunchD2RCNW11 gMultiLaunchD2RCNW11, 启动国服win11
+    Gui, Add, Button, x330 y360 w100 h20 vBMultiLaunchD2RCNW11 gMultiLaunchD2RCNW11, Launch CN Server Win11
     GuiControl, Hide, BMultiLaunchD2RCNW11
     */
-    ;Gui, Add, Button, x235 y360 w80 h20 vBLaunchD2RCN gMultiLaunchD2RCN, 启动国服
+    ;Gui, Add, Button, x235 y360 w80 h20 vBLaunchD2RCN gMultiLaunchD2RCN, Launch CN Server
     ;GuiControl, Hide, BLaunchD2RCN
-    ;Gui, Add, Button, x330 y360 w100 h20 vBLaunchD2RCNw11 gMultiLaunchD2RCNW11, 启动国服win11
+    ;Gui, Add, Button, x330 y360 w100 h20 vBLaunchD2RCNw11 gMultiLaunchD2RCNW11, Launch CN Server Win11
     ;GuiControl, Hide, BLaunchD2RCNW11
     
-    ;Gui, Add, Button, x255 y360 w100 h20 gSaveD2RShortcuts, 保存设置
-    Gui, Add, Text, x345 y540 w80 h20, 启动间隔：
+    ;Gui, Add, Button, x255 y360 w100 h20 gSaveD2RShortcuts, Save Settings
+    Gui, Add, Text, x345 y540 w80 h20, Launch Interval:
     Gui, Add, Edit, x405 y537 w20 h20 Limit10 vBD2RLaunchDelay,  
-    Gui, Add, Text, x430 y540 w20 h20, 秒
-    Gui Add, Button, x600 y537 w80 h20 gSaveD2RShortcuts, 保存设置
+    Gui, Add, Text, x430 y540 w20 h20, Seconds
+    Gui Add, Button, x600 y537 w80 h20 gSaveD2RShortcuts, Save Settings
     ;Gui Add, Button, x600 y507 w80 h20 gChangeBrowserChrome, Test
 
-    Gui, Add, Text, x350 y80 w80 h20, 主机窗口：
-    Gui, Add, DropDownList, x410 y77 w100 AltSubmit choose1 vBD2RGameHostWin, 窗口1|窗口2|窗口3|窗口4|窗口5|窗口6|窗口7|窗口8 
-    Gui, Add, Text, x520 y80 w80 h20, 游戏难度：
-    Gui, Add, DropDownList, x580 y77 w100 AltSubmit choose3 vBD2RGameHostLevel, 普通|噩梦|地狱 
-    Gui, Add, Text, x350 y110 w80 h20, 房间名称：
+    Gui, Add, Text, x350 y80 w80 h20, Host Window:
+    Gui, Add, DropDownList, x410 y77 w100 AltSubmit choose1 vBD2RGameHostWin, Window1|Window2|Window3|Window4|Window5|Window6|Window7|Window8 
+    Gui, Add, Text, x520 y80 w80 h20, Game Difficulty:
+    Gui, Add, DropDownList, x580 y77 w100 AltSubmit choose3 vBD2RGameHostLevel, Normal|Nightmare|Hell 
+    Gui, Add, Text, x350 y110 w80 h20, Room Name:
     Gui, Add, Edit, x410 y107 w100 h20 vBD2RHostName,  
-    Gui, Add, Text, x520 y110 w80 h20, 房间密码：
+    Gui, Add, Text, x520 y110 w80 h20, Room Password:
     Gui, Add, Edit, x580 y107 w100 h20 vBD2RHostPW, 
-    Gui, Add, Text, x520 y140 w80 h20, 等待时间：
+    Gui, Add, Text, x520 y140 w80 h20, Wait Time:
     Gui, Add, Edit, x580 y137 w100 h20 vBD2RHostDelay, 
-    Gui, Add, Text, x350 y140 w80 h20, 仅加入： 
+    Gui, Add, Text, x350 y140 w80 h20, Join Only: 
 	Gui, Add, CheckBox, x410 y137 w40 h20 vBD2ROnlyJoin, ;
-    ; 新增退出等待设置（与上方对齐，高度匹配左侧“开关坐标”）
-    Gui, Add, Text, x520 y170 w80 h20, 退出等待：
-    Gui, Add, Edit, x580 y167 w100 h20 vBD2RExitDelay, 1000  ; 默认值1000毫秒，可按需修改
+    ; New exit wait setting (aligned with above, height match left "switch coord")
+    Gui, Add, Text, x520 y170 w80 h20, Exit Wait:
+    Gui, Add, Edit, x580 y167 w100 h20 vBD2RExitDelay, 1000  ; Default 1000 milliseconds, can modify as needed
 
-    Gui, Add, Text, x350 y170 w80 h20, 开关坐标：
+    Gui, Add, Text, x350 y170 w80 h20, Toggle Coord:
     Gui, Add, Edit, x410 y167 w45 h20 vBD2RQuickToggleX, 0.7207
     Gui, Add, Edit, x465 y167 w45 h20 vBD2RQuickToggleY, 0.0402
-    Gui, Add, Text, x350 y200 w80 h20, 创建菜单：
+    Gui, Add, Text, x350 y200 w80 h20, Create Menu:
     Gui, Add, Edit, x410 y197 w45 h20 vBD2RCreateMenuX, 0.68
     Gui, Add, Edit, x465 y197 w45 h20 vBD2RCreateMenuY, 0.0777
-    Gui, Add, Text, x520 y200 w80 h20, 加入菜单：
+    Gui, Add, Text, x520 y200 w80 h20, Join Menu:
     Gui, Add, Edit, x580 y197 w45 h20 vBD2JoinMenuX, 0.7686
     Gui, Add, Edit, x635 y197 w45 h20 vBD2JoinMenuY, 0.0777
-    Gui, Add, Text, x350 y230 w80 h20, 创建房名：
+    Gui, Add, Text, x350 y230 w80 h20, Create Room Name:
     Gui, Add, Edit, x410 y227 w45 h20 vBD2RCreateNameX, 0.6952
     Gui, Add, Edit, x465 y227 w45 h20 vBD2RCreateNameY, 0.1694
-    Gui, Add, Text, x520 y230 w80 h20, 创建按钮：
+    Gui, Add, Text, x520 y230 w80 h20, Create Button:
     Gui, Add, Edit, x580 y227 w45 h20 vBD2RCreateButtonX, 0.7615
     Gui, Add, Edit, x635 y227 w45 h20 vBD2RCreateButtonY, 0.6166
-    ;Gui, Add, Text, x520 y230 w80 h20, 创建密码：
+    ;Gui, Add, Text, x520 y230 w80 h20, Create Password:
     ;Gui, Add, Edit, x580 y227 w45 h20 vBD2CreatePassX, 0.7207
     ;Gui, Add, Edit, x635 y227 w45 h20 vBD2CreatePassY, 0.0312
-    Gui, Add, Text, x350 y260 w80 h20, 普通难度：
+    Gui, Add, Text, x350 y260 w80 h20, Normal Difficulty:
     Gui, Add, Edit, x410 y257 w45 h20 vBD2RNormalX, 0.698
     Gui, Add, Edit, x465 y257 w45 h20 vBD2RNormalY, 0.3527
-    Gui, Add, Text, x520 y260 w80 h20, 恶梦难度：
+    Gui, Add, Text, x520 y260 w80 h20, Nightmare Difficulty:
     Gui, Add, Edit, x580 y257 w45 h20 vBD2RNightMareX, 0.7604
     Gui, Add, Edit, x635 y257 w45 h20 vBD2RNightMaresY, 0.3527
-    Gui, Add, Text, x350 y290 w80 h20, 地狱难度：
+    Gui, Add, Text, x350 y290 w80 h20, Hell Difficulty:
     Gui, Add, Edit, x410 y287 w45 h20 vBD2RHellX, 0.8227
     Gui, Add, Edit, x465 y287 w45 h20 vBD2RHellY, 0.3527
     /*
-    Gui, Add, Text, x520 y290 w80 h20, 创建按钮：
+    Gui, Add, Text, x520 y290 w80 h20, Create Button:
     Gui, Add, Edit, x580 y287 w45 h20 vBD2RCreateButtonX, 0.7615
     Gui, Add, Edit, x635 y287 w45 h20 vBD2RCreateButtonY, 0.6166
     */
-    Gui, Add, Text, x350 y320 w80 h20, 加入房名：
+    Gui, Add, Text, x350 y320 w80 h20, Join Room Name:
     Gui, Add, Edit, x410 y317 w45 h20 vBD2RJoinNameX, 0.6807
     Gui, Add, Edit, x465 y317 w45 h20 vBD2RJoinNameY, 0.1465
-    Gui, Add, Text, x520 y320 w80 h20, 加入按钮：
+    Gui, Add, Text, x520 y320 w80 h20, Join Button:
     Gui, Add, Edit, x580 y317 w45 h20 vBD2RJoinButtonX, 0.758
     Gui, Add, Edit, x635 y317 w45 h20 vBD2RJoinButtonY, 0.6194
 
-    Gui Add, Button, x580 y350 w100 h20 gRestore_D2RQuickJoin, 点击恢复预设值
+    Gui Add, Button, x580 y350 w100 h20 gRestore_D2RQuickJoin, Click to Restore Preset Values
     /*
-    Gui, Add, Text, x520 y330 w80 h20, 加入密码：
+    Gui, Add, Text, x520 y330 w80 h20, Join Password:
     Gui, Add, Edit, x580 y327 w45 h20 vBD2RJoinPassX, 0.7207
     Gui, Add, Edit, x635 y327 w45 h20 vBD2RJoinPassY, 0.0312
-    Gui, Add, Text, x520 y360 w80 h20, 加入按钮：
+    Gui, Add, Text, x520 y360 w80 h20, Join Button:
     Gui, Add, Edit, x580 y357 w45 h20 vBD2RJoinButtonX, 0.7207
     Gui, Add, Edit, x635 y357 w45 h20 vBD2RJoinButtonY, 0.0312
     */
     
-    ;Gui Add, Button, x350 y170 h18 w120 gCreate_D2R_Game, 开始创建/加入
+    ;Gui Add, Button, x350 y170 h18 w120 gCreate_D2R_Game, Start Create/Join
 
 
-    Gui, Add, GroupBox, x15 y580 w690 h275, 详细说明，请仔细阅读！
-    v_readme := "# 通过快捷方式启动游戏后会自动获取窗口句柄，或者点击获取窗口按钮来刷新句柄" 
+    Gui, Add, GroupBox, x15 y580 w690 h275, Detailed Instructions, Please Read Carefully!
+    v_readme := "# After launching game via shortcut will auto get window handle, or click get windows button to refresh handle" 
     v_readme := v_readme "`r`n# ----------------------------------------------------------------------------------------------"
-    v_readme := v_readme "`r`n# 切换窗口快键键：依次为alt+1，+2，+3……"
-    v_readme := v_readme "`r`n# -------------------------------------------------------------------------自动创建/加入功能如下--"
-    v_readme := v_readme "`r`n# 创建、加入游戏的过程中，请勿操作鼠键"
-    v_readme := v_readme "`r`n# 默认值为2560x1440分辨率的窗口模式，同比例分辨率应该可用，如有偏差请微调坐标区域的X轴和Y轴比例，保存"
-    v_readme := v_readme "`r`n# 重点： 必须使用MDK插件，或作者整合的WILL.SD插件（文件列表中有），需要其中的快捷创键/加入游戏按钮"
-    v_readme := v_readme "`r`n# 主机窗口指用来创建游戏房间的那个窗口"
-    v_readme := v_readme "`r`n# 窗口1-8后的加入复选框，选中时将自动加入指定名称和密码的房间"
-    v_readme := v_readme "`r`n# 仅加入指：不创建游戏，只加入指定名称和密码的房间。"
-    v_readme := v_readme "`r`n# 重点： 将房间名称设为数字的话，创建时会自动+1，重建游戏直接按F10即可，无须每次手动再输入名称"
-    v_readme := v_readme "`r`n# 创建游戏&加入游戏快捷键：在任一D2窗口内按F10。"
-    v_readme := v_readme "`r`n# 想使用其它方式启动，可以在自定义宏中添加-自定义语句，内容为：Gosub, F10"
-    v_readme := v_readme "`r`n# -----------------------------------------------------------------------------多开窗口功能如下--"
-    v_readme := v_readme "`r`n# 使用了网友的多开快捷方式设置，按[多开快捷方式设置]文件夹中帮助文档设置即可"
-    v_readme := v_readme "`r`n# 快捷方式列表以及启动间隔（建议5秒+)，需要点击保存按钮"
-    v_readme := v_readme "`r`n# 快捷方式列表中按住ctrl键可多选，多选时将依次开启多个窗口"
+    v_readme := v_readme "`r`n# Switch window hotkeys: Alt+1, +2, +3……"
+    v_readme := v_readme "`r`n# -------------------------------------------------------------------------Auto Create/Join Function as follows--"
+    v_readme := v_readme "`r`n# During create/join game process, do not operate mouse/keyboard"
+    v_readme := v_readme "`r`n# Default value for 2560x1440 windowed mode, same ratio resolution should work, if deviation please fine tune X/Y axis ratio of coord area, save"
+    v_readme := v_readme "`r`n# Important: Must use MDK plugin, or author's integrated WILL.SD plugin pack (in file list), needs quick create/join game button in it"
+    v_readme := v_readme "`r`n# Host window refers to the window used to create game room"
+    v_readme := v_readme "`r`n# Window1-8 join checkboxes, checked will auto join specified name and password room"
+    v_readme := v_readme "`r`n# Join Only: Do not create game, only join specified name and password room."
+    v_readme := v_readme "`r`n# Important: Set room name to number, will auto +1 when create, rebuild game directly press F10, no need manual input name each time"
+    v_readme := v_readme "`r`n# Create Game & Join Game Hotkey: In any D2 window press F10."
+    v_readme := v_readme "`r`n# Want to use other launch method, can add in custom macro - custom statement, content: Gosub, F10"
+    v_readme := v_readme "`r`n# -----------------------------------------------------------------------------Multi Window Function as follows--"
+    v_readme := v_readme "`r`n# Used netizen's multi launch shortcut settings, set according to help document in [Multi Launch Shortcuts Settings] folder"
+    v_readme := v_readme "`r`n# Shortcut list and launch interval (recommend 5 seconds+), need click save button"
+    v_readme := v_readme "`r`n# In shortcut list hold Ctrl to multi select, multi select will launch multiple windows sequentially"
     v_readme := v_readme "`r`n# ----------------------------------------------------------------------------------------------"
-    v_readme := v_readme "`r`n# ctrl+b可快速切换至宏界面"
+    v_readme := v_readme "`r`n# Ctrl+B can quickly switch to macro interface"
 
     Gui, Add, Text, x25 y600 w650 h240, %v_readme%
     ;---------------------------------------------------------------------------------- 
 
-    ;;;;;;;;;配置切换;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;Config Switch;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     Gui, Tab, 3
 
     Gui, Add, GroupBox, x15 y24 w690 h560,   
 
-    Gui Add, Button, x25 y50 w75 h23 gSelect_Config2, 快速配置2
+    Gui Add, Button, x25 y50 w75 h23 gSelect_Config2, Quick Config 2
     Gui, Add, Text, x110 y55 W400 h23 vConfigPath2, %A_ScriptDir%\D4.sadan.cfg ;%SelectedFile2%
 
-    Gui Add, Button, x25 y80 w75 h23 gSelect_Config3, 快速配置3
+    Gui Add, Button, x25 y80 w75 h23 gSelect_Config3, Quick Config 3
     Gui, Add, Text, x110 y85 W400 h23 vConfigPath3, %A_ScriptDir%\D4.sadan.cfg ;%SelectedFile3%
 
-    Gui Add, Button, x25 y110 w75 h23 gSelect_Config4, 快速配置4
+    Gui Add, Button, x25 y110 w75 h23 gSelect_Config4, Quick Config 4
     Gui, Add, Text, x110 y115 W400 h23 vConfigPath4, %A_ScriptDir%\D4.sadan.cfg ;%SelectedFile4%
 
-    Gui Add, Button, x25 y140 w75 h23 gSelect_Config5, 快速配置5
+    Gui Add, Button, x25 y140 w75 h23 gSelect_Config5, Quick Config 5
     Gui, Add, Text, x110 y145 W400 h23 vConfigPath5, %A_ScriptDir%\D4.sadan.cfg ;%SelectedFil5%
 
-    Gui Add, Button, x25 y170 w75 h23 gSelect_Config6, 快速配置6
+    Gui Add, Button, x25 y170 w75 h23 gSelect_Config6, Quick Config 6
     Gui, Add, Text, x110 y175 W400 h23 vConfigPath6, %A_ScriptDir%\D4.sadan.cfg ;%SelectedFile6%
 
-    Gui Add, Button, x25 y200 w75 h23 gSelect_Config7, 快速配置7
+    Gui Add, Button, x25 y200 w75 h23 gSelect_Config7, Quick Config 7
     Gui, Add, Text, x110 y205 W400 h23 vConfigPath7, %A_ScriptDir%\D4.sadan.cfg ;%SelectedFile7%
 
-    Gui Add, Button, x25 y230 w75 h23 gSelect_Config8, 快速配置8
+    Gui Add, Button, x25 y230 w75 h23 gSelect_Config8, Quick Config 8
     Gui, Add, Text, x110 y235 W400 h23 vConfigPath8, %A_ScriptDir%\D4.sadan.cfg ;%SelectedFile8%
 
 
-    Gui, Add, GroupBox, x15 y580 w690 h275, 详细说明，请仔细阅读！
-    v_readme := "# 添加多个备用配置，用于快速切换" 
+    Gui, Add, GroupBox, x15 y580 w690 h275, Detailed Instructions, Please Read Carefully!
+    v_readme := "# Add multiple backup configs for quick switch" 
     v_readme := v_readme "`r`n# ----------------------------------------------------------------------------------------------"
-    v_readme := v_readme "`r`n# 切换配置快捷键：主页配置为ctrl+1，备用配置依次为ctrl+2，+3……"
-    v_readme := v_readme "`r`n# 在修改/调试配置文件时，请勿使用快捷键切换配置"
-    v_readme := v_readme "`r`n# 因为所有修改的内容都会全部保存至主配置文件中，如果修改时忘了切回主配置，将覆盖掉主配置无法还原"
-    v_readme := v_readme "`r`n# ctrl+b切换至宏界面"
+    v_readme := v_readme "`r`n# Switch config hotkeys: Main config Ctrl+1, backup configs Ctrl+2, +3……"
+    v_readme := v_readme "`r`n# When modifying/debugging config file, do not use hotkey to switch config"
+    v_readme := v_readme "`r`n# Because all modified content will be saved to main config file, if forget switch back to main config when modifying, will overwrite main config cannot restore"
+    v_readme := v_readme "`r`n# Ctrl+B switch to macro interface"
     v_readme := v_readme "`r`n# ----------------------------------------------------------------------------------------------"
 
     Gui, Add, Text, x25 y600 w650 h240, %v_readme%
     ;---------------------------------------------------------------------------------- 
     
-    ;;;;;;;;;喊话设置选项卡内容;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;Shout Settings Tab Content;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     Gui, Tab, 9
     ;--------------------------------------------------------------------------
-    Gui, Add, Text, x25 y260 h20, 自定义热键
-    Gui, Add, Text, x160 y260 w60 h20, 启用
-    Gui, Add, Text, x192 y260 w60 h20, 单次
-    ;Gui, Add, Text, x220 y230 w60 h20, 自启
+    Gui, Add, Text, x25 y260 h20, Custom Hotkey
+    Gui, Add, Text, x160 y260 w60 h20, Enable
+    Gui, Add, Text, x192 y260 w60 h20, Single
+    ;Gui, Add, Text, x220 y230 w60 h20, Auto Start
     
 	Gui, Add, Edit, x25 y277 w50 h20 vBHotkey3
 	Gui, Add, DropDownList, x80 y277 w75 AltSubmit choose1 vBMode3, %marceItem%
@@ -804,46 +804,46 @@ MyGUI:
     
     Gui, Add, GroupBox, x15 y24 w690 h600, 
     
-    Gui, Add, Text, x25 y50 h20, 【ALT+1或小键盘1】
+    Gui, Add, Text, x25 y50 h20, 【ALT+1 or Numpad1】
     Gui, Add, Edit, x135 y47 w370 h20 vBAutoEnter1
     
-    Gui, Add, Text, x25 y80 h20, 【ALT+2或小键盘2】
+    Gui, Add, Text, x25 y80 h20, 【ALT+2 or Numpad2】
     Gui, Add, Edit, x135 y77 w370 h20 vBAutoEnter2
     
-    Gui, Add, Text, x25 y110 h20, 【ALT+3或小键盘3】
+    Gui, Add, Text, x25 y110 h20, 【ALT+3 or Numpad3】
     Gui, Add, Edit, x135 y107 w370 h20 vBAutoEnter3
     
-    Gui, Add, Text, x25 y140 h20, 【ALT+4或小键盘4】
+    Gui, Add, Text, x25 y140 h20, 【ALT+4 or Numpad4】
     Gui, Add, Edit, x135 y137 w370 h20 vBAutoEnter4
     
-    Gui, Add, Text, x25 y170 h20, 【ALT+5或小键盘5】
+    Gui, Add, Text, x25 y170 h20, 【ALT+5 or Numpad5】
     Gui, Add, Edit, x135 y167 w370 h20 vBAutoEnter5
     
-    Gui, Add, Text, x25 y200 h20, 【ALT+6或小键盘6】
+    Gui, Add, Text, x25 y200 h20, 【ALT+6 or Numpad6】
     Gui, Add, Edit, x135 y197 w370 h20 vBAutoEnter6
     
-    Gui, Add, Text, x25 y230 h20, 【ALT+7或小键盘7】
+    Gui, Add, Text, x25 y230 h20, 【ALT+7 or Numpad7】
     Gui, Add, Edit, x135 y227 w370 h20 vBAutoEnter7
     
-    Gui, Add, Text, x25 y260 h20, 【ALT+8或小键盘8】
+    Gui, Add, Text, x25 y260 h20, 【ALT+8 or Numpad8】
     Gui, Add, Edit, x135 y257 w370 h20 vBAutoEnter8
     
-    Gui, Add, Text, x25 y290 h20, 【ALT+9或小键盘9】
+    Gui, Add, Text, x25 y290 h20, 【ALT+9 or Numpad9】
     Gui, Add, Edit, x135 y287 w370 h20 vBAutoEnter9
     
-    Gui, Add, GroupBox, x15 y620 w690 h235, 详细说明
-    v_readme := "# 用于快捷喊话，内容自行设置；" 
-    v_readme := v_readme "`r`n# 宏状态为开启时，自定义喊话才生效；"
-    v_readme := v_readme "`r`n# 此功能暂停使用；"
+    Gui, Add, GroupBox, x15 y620 w690 h235, Detailed Instructions
+    v_readme := "# Used for quick shout, set content yourself;" 
+    v_readme := v_readme "`r`n# When macro status is on, custom shout takes effect;"
+    v_readme := v_readme "`r`n# This function is paused;"
     Gui, Add, Text, x25 y640 w450 h120, %v_readme%
     
-    ;;;;;;;;;自定义代码选项卡内容;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;Custom Code Tab Content;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     Gui, Tab, 5
     
     Gui, Add, GroupBox, x15 y24 w690 h600, 
             
-    Gui, Add, Button, x25 y50 w75 h23 gSelect_UserFile, 选择文件
-    Gui, Add, Text, x110 y55 W350 h23 vUserFilePath, 选择后会重新载入程序以加载自定义代码
+    Gui, Add, Button, x25 y50 w75 h23 gSelect_UserFile, Select File
+    Gui, Add, Text, x110 y55 W350 h23 vUserFilePath, After selection will reload program to load custom code
     
     Gui, Add, Edit, x25 y400 w100 h20 Multi vBTestMultiEDit, 100 
                 
@@ -857,45 +857,45 @@ MyGUI:
         yValue := 100 + ((i - 1) * 30)
         yValue2 := yValue - 3
 
-        Gui, Add, Text, x25 y%yValue% h20, 快捷键%i%：
+        Gui, Add, Text, x25 y%yValue% h20, Hotkey%i%:
         Gui, Add, Edit, x75 y%yValue2% w80 h20 vBUserCodeHotkey%i% ;
-        Gui, Add, Text, x160 y%yValue% h20, 子程序名：
+        Gui, Add, Text, x160 y%yValue% h20, Subroutine Name:
         Gui, Add, Edit, x220 y%yValue2% w80 h20 vBUserCodeLabelName%i% ;
-        Gui, Add, Button, x320 y%yValue2% h20 gLoad_UserFile vBLoadUserFile%i%, 点击加载
+        Gui, Add, Button, x320 y%yValue2% h20 gLoad_UserFile vBLoadUserFile%i%, Click to Load
     }
 
     
-    Gui, Add, GroupBox, x15 y620 w690 h235, 详细说明
-    v_readme := "# 【不懂AHK者，请勿使用此页功能】" 
-    v_readme := v_readme "`r`n# 打开自定义的脚本文件即自动加载成功。"
-    v_readme := v_readme "`r`n# 请勿重新打开，否则会出错，如修改了自定义文件，重新打开主程序"
-    v_readme := v_readme "`r`n# 请注意自定义脚本中的命名及快捷键使用，不要与主程序冲突"
-    v_readme := v_readme "`r`n# 如脚本不写入快捷键只写子程序的话，可以用下方区域指定快捷键与子程序对应"
-    v_readme := v_readme "`r`n# 每次新开程序后请手动打开自定义的脚本文件"
+    Gui, Add, GroupBox, x15 y620 w690 h235, Detailed Instructions
+    v_readme := "# 【For those who don't understand AHK, please do not use this page function】" 
+    v_readme := v_readme "`r`n# Open custom script file will auto load successfully."
+    v_readme := v_readme "`r`n# Do not reopen, otherwise error, if modified custom file, reopen main program"
+    v_readme := v_readme "`r`n# Please note naming and hotkey usage in custom script, do not conflict with main program"
+    v_readme := v_readme "`r`n# If script does not write hotkey only subroutine, can use below area to specify hotkey and subroutine correspondence"
+    v_readme := v_readme "`r`n# After new open program please manually open custom script file"
     v_readme := v_readme "`r`n# -------------------------------------------------------------------"
-    v_readme := v_readme "`r`n# 如己知主程序自带F2,F5,F6,F7,F8等子程序（热键），可自设键来方便自己使用"
-    v_readme := v_readme "`r`n# 可快捷键如S，对应到子程序F8，点击加载，即可按S来实现F8功能"
-    v_readme := v_readme "`r`n# 可快捷键如XButton2（鼠标的第五个按键），对应到子程序F2，即可替代F2"
-    v_readme := v_readme "`r`n# 可快捷键如WheelUp（鼠标滚向上），对应到子程序F5，即可替代F5"
+    v_readme := v_readme "`r`n# For example main program built-in F2,F5,F6,F7,F8 etc subroutines (hotkeys), can self set key to convenient use"
+    v_readme := v_readme "`r`n# Can hotkey like S, correspond to subroutine F8, click load, can press S to achieve F8 function"
+    v_readme := v_readme "`r`n# Can hotkey like XButton2 (mouse fifth button), correspond to subroutine F2, can replace F2"
+    v_readme := v_readme "`r`n# Can hotkey like WheelUp (mouse wheel up), correspond to subroutine F5, can replace F5"
     Gui, Add, Text, x25 y640 w450 h150, %v_readme%
  
-    ;进入前先选择配置文件，不选则为默认配置文件----------------------------------------
-    FileSelectFile, SelectedFile, 3, , Open a file, 配置文件 (*.cfg)
+    ;Enter before first select config, if not select then default config----------------------------------------
+    FileSelectFile, SelectedFile, 3, , Open a file, Config Files (*.cfg)
     if (SelectedFile = "")
     {
         SelectedFile = %A_ScriptDir%\D4.sadan.cfg
-        ;MsgBox, 未选择任何配置文件，将使用默认配置:`n%SelectedFile%
+        ;MsgBox, No config file selected, will use default config:`n%SelectedFile%
     }
     ;----------------------------------------------------------------------------------
  
     
-    ;;;;;;;;主选项卡设置;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;Main Tab Settings;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     Gui, Tab, 1
-    Gui Add, Button, x25 y580 w75 h23 gSelect_Config, 选择配置
+    Gui Add, Button, x25 y580 w75 h23 gSelect_Config, Select Config
     Gui, Add, Text, x110 y585 W400 h23 vConfigPath, %SelectedFile%
     
-    Gui Add, Button, x560 y580 w60 h23 gConfigDocument, BD说明
-    Gui Add, Button, x630 y580 w60 h23 gConfigMainSave, BD保存 
+    Gui Add, Button, x560 y580 w60 h23 gConfigDocument, BD Instructions
+    Gui Add, Button, x630 y580 w60 h23 gConfigMainSave, BD Save 
 
 	Gosub, ReadFile
     Gosub, ReadfileCommon
@@ -917,25 +917,25 @@ return
 ShowTray:
 {
 	Menu, Tray, NoStandard
-	Menu, Tray, Add, 设置
-	Menu, Tray, Add, 退出
-	Menu, Tray, Default, 设置
-	Menu, Tray, Click, 1 ;单击打开托盘图标
+	Menu, Tray, Add, Settings
+	Menu, Tray, Add, Exit
+	Menu, Tray, Default, Settings
+	Menu, Tray, Click, 1 ;Click to open tray icon
 	Menu, Tray, Tip, D4.sadan
-	Menu, Tray, Icon, , , 1 ;保持不变
+	Menu, Tray, Icon, , , 1 ;Keep unchanged
 	return
 }
 
 
-设置:
+Settings:
 {
 	Gui, Show,, D4.sadan
   	return
 }
 
-退出:
+Exit:
 {
-    ;;;;;;;;;;;;;;;;;;;;;;;;退出显示图片;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;Exit display image;;;;;;;;;;;;;;;;;;;;;;;
     /*
     Gdip_Shutdown(pToken)
     */
@@ -954,7 +954,7 @@ ConfigMainSave:
 	Gui, Submit, NoHide
 	Gosub, GetControlValue
 	Gosub, SaveFile
-    msgbox 配置文件保存成功
+    msgbox Config file saved successfully
     return
 }
 
@@ -1049,11 +1049,11 @@ return
 ;------------------------------------------------------------------------------------Setting File >
 Select_Config:
 {
-    FileSelectFile, SelectedFile, 3, , Open a file, 配置文件 (*.cfg)
+    FileSelectFile, SelectedFile, 3, , Open a file, Config Files (*.cfg)
     if (SelectedFile = "")
     {
         SelectedFile = %A_ScriptDir%\D4.sadan.cfg
-        ;MsgBox, 未选择任何配置文件，将使用默认配置:`n%SelectedFile%
+        ;MsgBox, No config file selected, will use default config:`n%SelectedFile%
     }
     GuiControl, , ConfigPath, %SelectedFile%
     Gosub, ReadFile
@@ -1062,7 +1062,7 @@ Select_Config:
 }
 Select_Config2:
 {
-    FileSelectFile, SelectedFileExtra, 3, , Open a file, 配置文件 (*.cfg)
+    FileSelectFile, SelectedFileExtra, 3, , Open a file, Config Files (*.cfg)
     if (SelectedFileExtra = "")
         SelectedFileExtra = %A_ScriptDir%\D4.sadan.cfg
     GuiControl, , ConfigPath2, %SelectedFileExtra%
@@ -1070,7 +1070,7 @@ Select_Config2:
 }
 Select_Config3:
 {
-    FileSelectFile, SelectedFileExtra, 3, , Open a file, 配置文件 (*.cfg)
+    FileSelectFile, SelectedFileExtra, 3, , Open a file, Config Files (*.cfg)
     if (SelectedFileExtra = "")
         SelectedFileExtra = %A_ScriptDir%\D4.sadan.cfg
     GuiControl, , ConfigPath3, %SelectedFileExtra%
@@ -1078,7 +1078,7 @@ Select_Config3:
 }
 Select_Config4:
 {
-    FileSelectFile, SelectedFileExtra, 3, , Open a file, 配置文件 (*.cfg)
+    FileSelectFile, SelectedFileExtra, 3, , Open a file, Config Files (*.cfg)
     if (SelectedFileExtra = "")
         SelectedFileExtra = %A_ScriptDir%\D4.sadan.cfg
     GuiControl, , ConfigPath4, %SelectedFileExtra%
@@ -1086,7 +1086,7 @@ Select_Config4:
 }
 Select_Config5:
 {
-    FileSelectFile, SelectedFileExtra, 3, , Open a file, 配置文件 (*.cfg)
+    FileSelectFile, SelectedFileExtra, 3, , Open a file, Config Files (*.cfg)
     if (SelectedFileExtra = "")
         SelectedFileExtra = %A_ScriptDir%\D4.sadan.cfg
     GuiControl, , ConfigPath5, %SelectedFileExtra%
@@ -1094,7 +1094,7 @@ Select_Config5:
 }
 Select_Config6:
 {
-    FileSelectFile, SelectedFileExtra, 3, , Open a file, 配置文件 (*.cfg)
+    FileSelectFile, SelectedFileExtra, 3, , Open a file, Config Files (*.cfg)
     if (SelectedFileExtra = "")
         SelectedFileExtra = %A_ScriptDir%\D4.sadan.cfg
     GuiControl, , ConfigPath6, %SelectedFileExtra%
@@ -1102,7 +1102,7 @@ Select_Config6:
 }
 Select_Config7:
 {
-    FileSelectFile, SelectedFileExtra, 3, , Open a file, 配置文件 (*.cfg)
+    FileSelectFile, SelectedFileExtra, 3, , Open a file, Config Files (*.cfg)
     if (SelectedFileExtra = "")
         SelectedFileExtra = %A_ScriptDir%\D4.sadan.cfg
     GuiControl, , ConfigPath7, %SelectedFileExtra%
@@ -1110,7 +1110,7 @@ Select_Config7:
 }
 Select_Config8:
 {
-    FileSelectFile, SelectedFileExtra, 3, , Open a file, 配置文件 (*.cfg)
+    FileSelectFile, SelectedFileExtra, 3, , Open a file, Config Files (*.cfg)
     if (SelectedFileExtra = "")
         SelectedFileExtra = %A_ScriptDir%\D4.sadan.cfg
     GuiControl, , ConfigPath8, %SelectedFileExtra%
@@ -1120,10 +1120,10 @@ Select_Config8:
 ;------------------------------------------------------------------------------------Select_UserFile >
 Select_UserFile:
 {
-    FileSelectFile, SelectedUserFile, 3, , Open a file, 配置文件 (*.ahk)
+    FileSelectFile, SelectedUserFile, 3, , Open a file, AHK Files (*.ahk)
     if (SelectedUserFile = "")
     {   
-        GuiControl, , UserFilePath, 请选择自定义AHK文件
+        GuiControl, , UserFilePath, Please select custom AHK file
         return
     }
     else
@@ -1141,7 +1141,7 @@ Select_UserFile:
         GuiControl, , UserFilePath, %SelectedUserFile%
         FileRead, OutputVar, %SelectedUserFile%
         ahkExec(outputvar)
-        msgbox, "载入完成，已可以使用自定义脚本程序"
+        msgbox, "Load complete, custom script program can be used"
     }
 
     return
@@ -1264,41 +1264,41 @@ Set_ForceMove:
     Gui ForceMove:New
     Gui +HwndWinForceMove    
     
-    Gui, ForceMove:Add, Text, x260 y50 w60 h20, 1号技能：
-	Gui, ForceMove:Add, CheckBox, x320 y47 w80 h20 vBFMStopKey1, 停止按键 ;
+    Gui, ForceMove:Add, Text, x260 y50 w60 h20, Skill1:
+	Gui, ForceMove:Add, CheckBox, x320 y47 w80 h20 vBFMStopKey1, Stop Key ;
     
-	Gui, ForceMove:Add, Text, x260 y80 w60 h20, 2号技能：
-	Gui, ForceMove:Add, CheckBox, x320 y77 w80 h20 vBFMStopKey2, 停止按键 ;
+	Gui, ForceMove:Add, Text, x260 y80 w60 h20, Skill2:
+	Gui, ForceMove:Add, CheckBox, x320 y77 w80 h20 vBFMStopKey2, Stop Key ;
     
-    Gui, ForceMove:Add, Text, x260 y110 w60 h20, 3号技能：
-	Gui, ForceMove:Add, CheckBox, x320 y107 w80 h20 vBFMStopKey3, 停止按键 ;
+    Gui, ForceMove:Add, Text, x260 y110 w60 h20, Skill3:
+	Gui, ForceMove:Add, CheckBox, x320 y107 w80 h20 vBFMStopKey3, Stop Key ;
     
-    Gui, ForceMove:Add, Text, x260 y140 w60 h20, 4号技能：
-	Gui, ForceMove:Add, CheckBox, x320 y137 w80 h20 vBFMStopKey4, 停止按键 ;
+    Gui, ForceMove:Add, Text, x260 y140 w60 h20, Skill4:
+	Gui, ForceMove:Add, CheckBox, x320 y137 w80 h20 vBFMStopKey4, Stop Key ;
     
-    Gui, ForceMove:Add, Text, x260 y140 w60 h20, 左键技能：
-	Gui, ForceMove:Add, CheckBox, x320 y137 w80 h20 vBFMStopKey5, 停止按键 ;
+    Gui, ForceMove:Add, Text, x260 y140 w60 h20, Left Skill:
+	Gui, ForceMove:Add, CheckBox, x320 y137 w80 h20 vBFMStopKey5, Stop Key ;
     
-	Gui, ForceMove:Add, Text, x25 y50 w60 h20, 引导键1：
-	Gui, ForceMove:Add, CheckBox, x85 y47 w80 h20 vBFMStopCH1, 停止按键 ;
+	Gui, ForceMove:Add, Text, x25 y50 w60 h20, Channel Key1:
+	Gui, ForceMove:Add, CheckBox, x85 y47 w80 h20 vBFMStopCH1, Stop Key ;
     
-	Gui, ForceMove:Add, Text, x25 y80 w60 h20, 引导键2：
-	Gui, ForceMove:Add, CheckBox, x85 y77 w80 h20 vBFMStopCH2, 停止按键 ;
+	Gui, ForceMove:Add, Text, x25 y80 w60 h20, Channel Key2:
+	Gui, ForceMove:Add, CheckBox, x85 y77 w80 h20 vBFMStopCH2, Stop Key ;
     
-	Gui, ForceMove:Add, Text, x25 y110 w60 h20, 左   键：
-	Gui, ForceMove:Add, CheckBox, x85 y107 w80 h20 vBFMStopLM, 停止按键 ;
+	Gui, ForceMove:Add, Text, x25 y110 w60 h20, Left   Button:
+	Gui, ForceMove:Add, CheckBox, x85 y107 w80 h20 vBFMStopLM, Stop Key ;
     
-	Gui, ForceMove:Add, Text, x25 y140 w60 h20, 右   键：
-	Gui, ForceMove:Add, CheckBox, x85 y137 w80 h20 vBFMStopRM, 停止按键 ;
+	Gui, ForceMove:Add, Text, x25 y140 w60 h20, Right   Button:
+	Gui, ForceMove:Add, CheckBox, x85 y137 w80 h20 vBFMStopRM, Stop Key ;
     
-    v_readme := "# 指定左或右键按下为强制移动时，哪些技能将停止自动释放" 
-    v_readme := v_readme "`r`n# 当松开左或右键时，被停止自动释放的技能会恢复释放"
+    v_readme := "# When left or right button hold set to force move, which skills will stop auto release" 
+    v_readme := v_readme "`r`n# When release left or right button, stopped auto release skills will resume release"
 
     Gui, ForceMove:Add, Text, x25 y250, %v_readme%
     
     Gosub, ReadFileForceMove
     
-    Gui, ForceMove:Show, w500 h400, 强移设置
+    Gui, ForceMove:Show, w500 h400, Force Move Settings
 
     return
 }
@@ -1310,41 +1310,41 @@ Set_PickUp:
     Gui PickUp:New
     Gui +HwndWinPickUp 
     
-    Gui, PickUp:Add, Text, x260 y50 w60 h20, 1号技能：
-	Gui, PickUp:Add, CheckBox, x320 y47 w80 h20 vBPUStopKey1, 停止按键 ;
+    Gui, PickUp:Add, Text, x260 y50 w60 h20, Skill1:
+	Gui, PickUp:Add, CheckBox, x320 y47 w80 h20 vBPUStopKey1, Stop Key ;
     
-	Gui, PickUp:Add, Text, x260 y80 w60 h20, 2号技能：
-	Gui, PickUp:Add, CheckBox, x320 y77 w80 h20 vBPUStopKey2, 停止按键 ;
+	Gui, PickUp:Add, Text, x260 y80 w60 h20, Skill2:
+	Gui, PickUp:Add, CheckBox, x320 y77 w80 h20 vBPUStopKey2, Stop Key ;
     
-    Gui, PickUp:Add, Text, x260 y110 w60 h20, 3号技能：
-	Gui, PickUp:Add, CheckBox, x320 y107 w80 h20 vBPUStopKey3, 停止按键 ;
+    Gui, PickUp:Add, Text, x260 y110 w60 h20, Skill3:
+	Gui, PickUp:Add, CheckBox, x320 y107 w80 h20 vBPUStopKey3, Stop Key ;
     
-    Gui, PickUp:Add, Text, x260 y140 w60 h20, 4号技能：
-	Gui, PickUp:Add, CheckBox, x320 y137 w80 h20 vBPUStopKey4, 停止按键 ;
+    Gui, PickUp:Add, Text, x260 y140 w60 h20, Skill4:
+	Gui, PickUp:Add, CheckBox, x320 y137 w80 h20 vBPUStopKey4, Stop Key ;
     
-    Gui, PickUp:Add, Text, x260 y170 w60 h20, 第5技能：
-	Gui, PickUp:Add, CheckBox, x320 y167 w80 h20 vBPUStopKey5, 停止按键 ;
+    Gui, PickUp:Add, Text, x260 y170 w60 h20, Skill5:
+	Gui, PickUp:Add, CheckBox, x320 y167 w80 h20 vBPUStopKey5, Stop Key ;
     
-	Gui, PickUp:Add, Text, x25 y50 w60 h20, 引导键1：
-	Gui, PickUp:Add, CheckBox, x85 y47 w80 h20 vBPUStopCH1, 停止按键 ;
+	Gui, PickUp:Add, Text, x25 y50 w60 h20, Channel Key1:
+	Gui, PickUp:Add, CheckBox, x85 y47 w80 h20 vBPUStopCH1, Stop Key ;
     
-	Gui, PickUp:Add, Text, x25 y80 w60 h20, 引导键2：
-	Gui, PickUp:Add, CheckBox, x85 y77 w80 h20 vBPUStopCH2, 停止按键 ;
+	Gui, PickUp:Add, Text, x25 y80 w60 h20, Channel Key2:
+	Gui, PickUp:Add, CheckBox, x85 y77 w80 h20 vBPUStopCH2, Stop Key ;
     
-	Gui, PickUp:Add, Text, x25 y110 w60 h20, 左   键：
-	Gui, PickUp:Add, CheckBox, x85 y107 w80 h20 vBPUStopLM, 停止按键 ;
+	Gui, PickUp:Add, Text, x25 y110 w60 h20, Left   Button:
+	Gui, PickUp:Add, CheckBox, x85 y107 w80 h20 vBPUStopLM, Stop Key ;
     
-	Gui, PickUp:Add, Text, x25 y140 w60 h20, 右   键：
-	Gui, PickUp:Add, CheckBox, x85 y137 w80 h20 vBPUStopRM, 停止按键 ;
+	Gui, PickUp:Add, Text, x25 y140 w60 h20, Right   Button:
+	Gui, PickUp:Add, CheckBox, x85 y137 w80 h20 vBPUStopRM, Stop Key ;
     
-    v_readme := "# 指定左键按下为连点拾取时，哪些技能将停止自动释放" 
-    v_readme := v_readme "`r`n# 当松开左键时，被停止自动释放的技能会恢复释放"
+    v_readme := "# When left button hold set to continuous pickup, which skills will stop auto release" 
+    v_readme := v_readme "`r`n# When release left button, stopped auto release skills will resume release"
     
     Gui, PickUp:Add, Text, x25 y250, %v_readme%
     
     Gosub, ReadFilePickUp
     
-    Gui, PickUp:Show, w500 h400, 连点拾取设置
+    Gui, PickUp:Show, w500 h400, Continuous Pickup Settings
 
     return
 }
@@ -1355,15 +1355,15 @@ ConfigDocument:
     Gui ConfigDocumentWin:New
     Gui +HwndWinConfigDocument 
    
-    Gui, ConfigDocumentWin:Add, Text, x25 y20 h20, 技能、键位、配装说明： 
+    Gui, ConfigDocumentWin:Add, Text, x25 y20 h20, Skill, Keybind, Build Instructions: 
     Gui, ConfigDocumentWin:Add, Edit,x25 y40 w450 h120 vBCfgDoc_Skill, 
    
-    Gui, ConfigDocumentWin:Add, Text, x25 y180 h20, 操作说明： 
+    Gui, ConfigDocumentWin:Add, Text, x25 y180 h20, Operation Instructions: 
     Gui, ConfigDocumentWin:Add, Edit,x25 y200 w450 h300 vBCfgDoc_OP, 
     
     Gosub, ReadFileConfigDocument
     
-    Gui, ConfigDocumentWin:Show, w500 h540, 配置文件详细说明
+    Gui, ConfigDocumentWin:Show, w500 h540, Config File Detailed Instructions
     return
 }
 ;------------------------------------------------------------------------------------Setting ConfigDocument End>
@@ -1376,78 +1376,78 @@ Set_UserMarco:
     Gui UserMarcoSet%marcoNum%:New
     Gui +HwndWinUserMarco
     
-    Gui UserMarcoSet%marcoNum%:Add, Button, x25 y25 w75 h23 gAdd_action1, 添加动作
-    Gui UserMarcoSet%marcoNum%:Add, Button, x110 y25 w75 h23 gDel_action1, 删除动作
-    Gui UserMarcoSet%marcoNum%:Add, Text, x200 y20 h23 , 更换技能时填入值：XY-N（如32-6）-代表将第3行第2列的技能更换到下方的6号技能位置，`r`n按S键调出技能选择面板，X为技能所在行，Y为列；N为要替换的技能栏位置（1-6）
+    Gui UserMarcoSet%marcoNum%:Add, Button, x25 y25 w75 h23 gAdd_action1, Add Action
+    Gui UserMarcoSet%marcoNum%:Add, Button, x110 y25 w75 h23 gDel_action1, Delete Action
+    Gui UserMarcoSet%marcoNum%:Add, Text, x200 y20 h23 , When changing skill fill value: XY-N (e.g. 32-6) - means move skill at row 3 column 2 to below skill position 6,`r`nPress S to bring up skill selection panel, X is skill row, Y is column; N is skill bar position to replace (1-6)
     
-    v_readme := "| 最大可添加动作数:【 " actionArrayCount1 " 】"
-    ;v_readme := v_readme "`r`n| 所有按键值不区分大小写"
-    v_readme := v_readme "`r`n| 时间单位为毫秒；1秒=1000"
+    v_readme := "| Max actions can add:【 " actionArrayCount1 " 】"
+    ;v_readme := v_readme "`r`n| All key values case insensitive"
+    v_readme := v_readme "`r`n| Time unit is millisecond; 1 second = 1000"
     v_readme := v_readme "`r`n| ---------------------------"
-    v_readme := v_readme "`r`n| 单击/按住/松开按键时右侧填入内容："
-    v_readme := v_readme "`r`n| 26个字母及数字 - 直接填入即可；"
-    v_readme := v_readme "`r`n| 左键：LButton；右键：RButton；"
-    v_readme := v_readme "`r`n| 中键：MButton；"
-    v_readme := v_readme "`r`n| 鼠标第四键（侧键）：XButton1；"
-    v_readme := v_readme "`r`n| 鼠标第五键（侧键）：XButton2；"
-    v_readme := v_readme "`r`n| 向下转动鼠标滚轮：WheelDown；"
-    v_readme := v_readme "`r`n| 向上转动鼠标滚轮：WheelUp；；"
-    v_readme := v_readme "`r`n| Ctrl键：Ctrl； Shift键：Shift；"
-    v_readme := v_readme "`r`n| Alt键：Alt；空格：Space；回车：Enter；"
-    v_readme := v_readme "`r`n| 左Ctrl键：LControl；右Rtrl键：LControl；"
-    v_readme := v_readme "`r`n| 左Shift：LShift；右Shift：RShift"
-    v_readme := v_readme "`r`n| 左Alt键：LAlt；右Alt键：RAlt；"
+    v_readme := v_readme "`r`n| When click/hold/release key, fill content on right:"
+    v_readme := v_readme "`r`n| 26 letters and numbers - fill directly;"
+    v_readme := v_readme "`r`n| Left Button: LButton；Right Button: RButton；"
+    v_readme := v_readme "`r`n| Middle Button: MButton；"
+    v_readme := v_readme "`r`n| Mouse Fourth Button (Side): XButton1；"
+    v_readme := v_readme "`r`n| Mouse Fifth Button (Side): XButton2；"
+    v_readme := v_readme "`r`n| Mouse Wheel Down: WheelDown；"
+    v_readme := v_readme "`r`n| Mouse Wheel Up: WheelUp；；"
+    v_readme := v_readme "`r`n| Ctrl Key: Ctrl； Shift Key: Shift；"
+    v_readme := v_readme "`r`n| Alt Key: Alt；Space: Space；Enter: Enter；"
+    v_readme := v_readme "`r`n| Left Ctrl: LControl；Right Ctrl: LControl；"
+    v_readme := v_readme "`r`n| Left Shift: LShift；Right Shift: RShift"
+    v_readme := v_readme "`r`n| Left Alt: LAlt；Right Alt: RAlt；"
     v_readme := v_readme "`r`n| ---------------------------"
-    v_readme := v_readme "`r`n| 连按技能或取消时，右侧请填1/2/3/4/L/R"
+    v_readme := v_readme "`r`n| For continuous skill or cancel, fill 1/2/3/4/L/R on right"
     v_readme := v_readme "`r`n| ---------------------------"
-    v_readme := v_readme "`r`n| 多次按键填入：x,y,z"
-    v_readme := v_readme "`r`n| x-按键;y-间隔时间;z-次数;"
+    v_readme := v_readme "`r`n| Multiple keys fill: x,y,z"
+    v_readme := v_readme "`r`n| x-Key;y-Interval;z-Count;"
     v_readme := v_readme "`r`n| ---------------------------"
-    v_readme := v_readme "`r`n| 鼠标转圈填入：x,y,z,a,b"
-    v_readme := v_readme "`r`n| x-角度;y-距离（像素值）;z-时间间隔;"
-    v_readme := v_readme "`r`n| a-转圈时要发送的按键;b-1原地转圈|2移动转圈;"
+    v_readme := v_readme "`r`n| Mouse circle fill: x,y,z,a,b"
+    v_readme := v_readme "`r`n| x-Angle;y-Distance (pixel value);z-Time interval;"
+    v_readme := v_readme "`r`n| a-Key to send during circle;b-1 In place circle|2 Moving circle;"
     v_readme := v_readme "`r`n| ---------------------------"
-    v_readme := v_readme "`r`n| 鼠标移动填入：a,b,c"
-    v_readme := v_readme "`r`n| a-x轴比例值/像素值;y-y轴比例/像素;"
-    v_readme := v_readme "`r`n| c-1按比例|2按像素;"
+    v_readme := v_readme "`r`n| Mouse move fill: a,b,c"
+    v_readme := v_readme "`r`n| a-X axis ratio/pixel value;y-Y axis ratio/pixel;"
+    v_readme := v_readme "`r`n| c-1 Ratio|2 Pixel;"
     v_readme := v_readme "`r`n| ---------------------------"
-    v_readme := v_readme "`r`n| 强移键填：%BMoveKey% 站立键填: %BStandKey%"
+    v_readme := v_readme "`r`n| Force move key fill: %BMoveKey% Stand still key fill: %BStandKey%"
     v_readme := v_readme "`r`n| ---------------------------"
-    v_readme := v_readme "`r`n| 自定义语句简单示例："
+    v_readme := v_readme "`r`n| Custom statement simple example:"
     ;v_readme := v_readme "`r`n| ---------------------------"
-    v_readme := v_readme "`r`n| 1号技能宏名称：Label1；"
-    v_readme := v_readme "`r`n|    -> 延迟值：BDelay1，BDelay12；"
-    v_readme := v_readme "`r`n| 2号技能宏名称：Label2；"
-    v_readme := v_readme "`r`n|    -> 延迟值：BDelay2，BDelay22；"
-    v_readme := v_readme "`r`n| 3号技能宏名称：Label3；"
-    v_readme := v_readme "`r`n|    -> 延迟值：BDelay3，BDelay32；"
-    v_readme := v_readme "`r`n| 4号技能宏名称：Label4；"
-    v_readme := v_readme "`r`n|    -> 延迟值：BDelay4，BDelay42；"
-    v_readme := v_readme "`r`n| 左键宏名称：MouseLButton；"
-    v_readme := v_readme "`r`n|    -> 延迟值：BDelayL，BDelayL2；"
-    v_readme := v_readme "`r`n| 右键宏名称：MouseRButton；"
-    v_readme := v_readme "`r`n|    -> 延迟值：BDelayR，BDelayR2；"
-    v_readme := v_readme "`r`n| 中键宏名称：~MButton；"
-    v_readme := v_readme "`r`n| 第5技能宏名称：LabelMouseL；"
-    v_readme := v_readme "`r`n|    -> 延迟值：BDelayMouseL，BDelayMouseL2；"
+    v_readme := v_readme "`r`n| Skill1 macro name: Label1；"
+    v_readme := v_readme "`r`n|    -> Delay value: BDelay1，BDelay12；"
+    v_readme := v_readme "`r`n| Skill2 macro name: Label2；"
+    v_readme := v_readme "`r`n|    -> Delay value: BDelay2，BDelay22；"
+    v_readme := v_readme "`r`n| Skill3 macro name: Label3；"
+    v_readme := v_readme "`r`n|    -> Delay value: BDelay3，BDelay32；"
+    v_readme := v_readme "`r`n| Skill4 macro name: Label4；"
+    v_readme := v_readme "`r`n|    -> Delay value: BDelay4，BDelay42；"
+    v_readme := v_readme "`r`n| Left button macro name: MouseLButton；"
+    v_readme := v_readme "`r`n|    -> Delay value: BDelayL，BDelayL2；"
+    v_readme := v_readme "`r`n| Right button macro name: MouseRButton；"
+    v_readme := v_readme "`r`n|    -> Delay value: BDelayR，BDelayR2；"
+    v_readme := v_readme "`r`n| Middle button macro name: ~MButton；"
+    v_readme := v_readme "`r`n| Skill5 macro name: LabelMouseL；"
+    v_readme := v_readme "`r`n|    -> Delay value: BDelayMouseL，BDelayMouseL2；"
     v_readme := v_readme "`r`n| ---------------------------"
     v_readme := v_readme "`r`n| SetTimer, Label1, 50"
-    v_readme := v_readme "`r`n| -> 1号技能每50ms按一次"
+    v_readme := v_readme "`r`n| -> Skill1 press every 50ms"
     v_readme := v_readme "`r`n| SetTimer, Label1, %BDelay1%"
-    v_readme := v_readme "`r`n| -> 每间隔（左侧框体值）按一次"
+    v_readme := v_readme "`r`n| -> Every interval (left box value) press once"
     v_readme := v_readme "`r`n| SetTimer, Label1, %BDelay12%"
-    v_readme := v_readme "`r`n| -> 每间隔（右侧框体值）按一次"
+    v_readme := v_readme "`r`n| -> Every interval (right box value) press once"
     v_readme := v_readme "`r`n| SetTimer, Label1, off"
-    v_readme := v_readme "`r`n| -> 关闭1号技能自动按键"
+    v_readme := v_readme "`r`n| -> Close Skill1 auto press"
     v_readme := v_readme "`r`n| GoSub MbuttonChangeStatus"
-    v_readme := v_readme "`r`n| -> 相当于点击一次中键"
+    v_readme := v_readme "`r`n| -> Equivalent to click middle button once"
     v_readme := v_readme "`r`n| ---------------------------"
-    v_readme := v_readme "`r`n| 等待时间最大不超过20秒(200000)"
+    v_readme := v_readme "`r`n| Wait time max not exceed 20 seconds(200000)"
     v_readme := v_readme "`r`n| ---------------------------"
-    v_readme := v_readme "`r`n| 显示信息后记得要对应关闭信息"
+    v_readme := v_readme "`r`n| After show info remember to close info correspondingly"
     Gui, UserMarcoSet%marcoNum%:Add, Text, x480 y60, %v_readme%
     
-    Gui, UserMarcoSet%marcoNum%:Show, w780 h800, 自定义宏%marcoNum%设置
+    Gui, UserMarcoSet%marcoNum%:Show, w780 h800, Custom Macro%marcoNum% Settings
     
     Gosub, ReadFileUserMarco
 
@@ -1496,14 +1496,14 @@ Load_UserFile:
     if (IsLabel(t_name))
     {
         Hotkey, %t_key%, %t_name%
-    	GuiControl, , %t_control%, 绑定成功
+    	GuiControl, , %t_control%, Bind Success
         GuiControl, Disable,  %t_control%
         GuiControl, Disable,  BUserCodeHotkey%i_index%
         GuiControl, Disable,  BUserCodeLabelName%i_index%
     }
     else
     {
-        Msgbox, "不是有效的子程序名，请核对后输入"
+        Msgbox, "Not valid subroutine name, please check and input"
         return
     }
 
@@ -1523,7 +1523,7 @@ Get_D2R_WIN_ALL:
     for index, hwnd in D2RWindows
     {
         WinGetTitle, title, ahk_id %hwnd%
-        ;MsgBox, 窗口顺序 %index%: 句柄 %hwnd%`n标题: %title%
+        ;MsgBox, Window order %index%: Handle %hwnd%`nTitle: %title%
         GuiControl, , BD2RWIN%index%, %hwnd%
         GuiControl, , BD2RJoin%index%, 1
     }
@@ -1547,7 +1547,7 @@ GetD2RWindowsByCreationTime()
     WinGet, hwndList, List, Diablo II: Resurrected
     windows := []
 
-    ; 获取每个窗口的进程创建时间
+    ; Get each window process creation time
     Loop, %hwndList%
     {
         hwnd := hwndList%A_Index%
@@ -1556,13 +1556,13 @@ GetD2RWindowsByCreationTime()
         if !hProcess
             continue
 
-        ; 获取进程创建时间戳
+        ; Get process creation timestamp
         DllCall("GetProcessTimes", "Ptr", hProcess, "Int64*", creationTime, "Int64*", 0, "Int64*", 0, "Int64*", 0)
         DllCall("CloseHandle", "Ptr", hProcess)
         windows.Push({hwnd: hwnd, time: creationTime})
     }
 
-    ; 按创建时间排序（从小到大）
+    ; Sort by creation time (small to large)
     sorted := []
     for i, obj in windows
     {
@@ -1580,7 +1580,7 @@ GetD2RWindowsByCreationTime()
             sorted.Push(obj)
     }
 
-    ; 提取排序后的句柄
+    ; Extract sorted handles
     result := []
     for i, obj in sorted
         result.Push(obj.hwnd)
@@ -1591,17 +1591,17 @@ GetD2RWindowsByTaskbarOrder()
 {
     result := []
 
-    ; 找任务栏
+    ; Find taskbar
     WinGet, hTaskbar, ID, ahk_class Shell_TrayWnd
     if (!hTaskbar)
         return result
 
-    ; 找任务栏里的 ToolbarWindow32
+    ; Find ToolbarWindow32 in taskbar
     hToolbar := FindTaskbarToolbar(hTaskbar)
     if (!hToolbar)
         return result
 
-    ; Toolbar 按钮数量
+    ; Toolbar button count
     SendMessage, 0x418, 0, 0,, ahk_id %hToolbar%  ; TB_BUTTONCOUNT
     btnCount := ErrorLevel
 
@@ -1614,7 +1614,7 @@ GetD2RWindowsByTaskbarOrder()
         if (ErrorLevel = 0)
             continue
 
-        ; dwData 通常存 HWND
+        ; dwData usually stores HWND
         hwnd := NumGet(btn, A_PtrSize * 2, "Ptr")
         if (!hwnd)
             continue
@@ -1639,7 +1639,7 @@ FindTaskbarToolbar(hTaskbar)
 
         if (cls = "ReBarWindow32")
         {
-            ; ReBar 下面再找 Toolbar
+            ; ReBar below find Toolbar
             WinGet, childs, ControlListHwnd, ahk_id %hCtrl%
             Loop, Parse, childs, `n
             {
@@ -1685,16 +1685,16 @@ Restore_D2RQuickJoin:
 D2R_Check_GamePosition:
 {
     /*
-    0=游戏内；1=人物界面；2=大厅界面
+    0=in game；1=character screen；2=lobby screen
     PixelSearch, x, y, 0,0,A_ScreenWidth,A_ScreenHeight, 0x00FF00
-    判断左上：0.8359 0.9028
-    判断右下：0.8680 0.95
+    Judge left top：0.8359 0.9028
+    Judge right bottom：0.8680 0.95
 
-    判断颜色1:  521818
-    判断颜色2： CFB277
+    Judge color1:  521818
+    Judge color2： CFB277
 
-    创建按钮： 0.5980 0.0403
-    加入按钮： 0.6883 0.0403
+    Create button： 0.5980 0.0403
+    Join button： 0.6883 0.0403
 
     */
     global BServer, boss_Enable, D2R_GamePosition
@@ -1710,7 +1710,7 @@ D2R_Check_GamePosition:
         titlebar_height := 0
     }
 
-    ; 判断是否大厅界面
+    ; Judge if lobby screen
     /*
     check_pos1x := current_Width*0.4857
     check_pos1y := (current_Height - titlebar_height)*0.1139
@@ -1746,7 +1746,7 @@ D2R_Check_GamePosition:
     }
     ;*/
 
-    ; 判断是否人物界面
+    ; Judge if character screen
     check_pos1x := current_Width*0.8359
     check_pos1y := (current_Height - titlebar_height)*0.9028
     check_pos2x := current_Width*0.8680
@@ -1779,11 +1779,11 @@ Create_D2R_Game111:
     GuiControlGet, BD2RHostPW
     if (Strlen(BD2RHostName) < 3)
     {
-        MsgBox, 房间名必须大于两位
+        MsgBox, Room name must be more than two characters
         Return
     }
     GuiControlGet, BD2ROnlyJoin
-    ;等待主机创建时间 BD2RHostDelay
+    ;Wait host create time BD2RHostDelay
     GuiControlGet, BD2RHostDelay
     If (BD2RHostDelay is not Number)
         BD2RHostDelay := 500
@@ -1841,18 +1841,18 @@ Create_D2R_Game111:
             host_pid := BD2RWIN8
             WinActivate, ahk_id %BD2RWIN8%
         }
-        Sleep, 100 ;确保窗口已切换
+        Sleep, 100 ;Ensure window switched
 
         if WinExist("ahk_id " host_pid)
         {
-            ;处理创建游戏
-            ;按空格关闭窗口
+            ;Handle create game
+            ;Press space close window
             Send {Space}
             Sleep, 100
 
             D2R_GamePosition := 0
             Gosub D2R_Check_GamePosition
-            ;检测是否已经打开了快捷菜单
+            ;Detect if quick menu already opened
             if (D2R_GamePosition = 0)
             {
                 MoveYourMouse(BD2RQuickToggleX, BD2RQuickToggleY, 1)
@@ -1861,7 +1861,7 @@ Create_D2R_Game111:
                 Sleep, 100
             }
 
-            ;依次点击左右左
+            ;Click left right left sequentially
             if (D2R_GamePosition = 0)
             {
                 MoveYourMouse(BD2RCreateMenuX, BD2RCreateMenuY, 1)
@@ -1875,7 +1875,7 @@ Create_D2R_Game111:
             Sleep, 100
 
 
-            ;游戏名称
+            ;Game name
             if BD2RHostName is Number
             {
                 BD2RHostName++
@@ -1897,7 +1897,7 @@ Create_D2R_Game111:
             Sleep, 100
 
             Send, {Tab}
-            ;游戏密码
+            ;Game password
             if (StrLen(BD2RHostPW) > 0)
             {
                 Sleep, 100
@@ -1912,7 +1912,7 @@ Create_D2R_Game111:
             }
             Sleep, 100
 
-            ;选择难度
+            ;Select difficulty
             if (BD2RGameHostLevel = 1)
                 MoveYourMouse(BD2RNormalX, BD2RNormalY, 1)
             if (BD2RGameHostLevel = 2)
@@ -1923,17 +1923,17 @@ Create_D2R_Game111:
             MouseClick, L
             Sleep, 100
             
-            ;开始创建
+            ;Start create
             Send, {Enter}
             Sleep, 300
         }
         Else
         {
-            MsgBox, 主机窗口不存在，PID： %host_pid%
-            Return ;如果主机窗口不存在，则停止创建
+            MsgBox, Host window not exist, PID: %host_pid%
+            Return ;If host window not exist, stop create
         }
         
-        Sleep, %BD2RHostDelay% ;创建完后，再等一下，以避免加入失败
+        Sleep, %BD2RHostDelay% ;After create, wait a bit to avoid join fail
     }
     i := 1
     While (i <= 8) 
@@ -1953,14 +1953,14 @@ Create_D2R_Game111:
             {
                 WinActivate, ahk_id %join_pid%
                 Sleep, 100
-                ;处理加入游戏111
-                ;按空格关闭窗口
+                ;Handle join game111
+                ;Press space close window
                 Send {Space}
                 Sleep, 100
                 
                 D2R_GamePosition := 0
                 Gosub D2R_Check_GamePosition
-                ;检测是否已经打开了快捷菜单
+                ;Detect if quick menu already opened
                 if (D2R_GamePosition = 0)
                 {
                     MoveYourMouse(BD2RQuickToggleX, BD2RQuickToggleY, 1)
@@ -1969,7 +1969,7 @@ Create_D2R_Game111:
                     Sleep, 100
                 }
 
-                ;依次点击右左右
+                ;Click right left right sequentially
                 if (D2R_GamePosition = 0)
                     MoveYourMouse(BD2JoinMenuX, BD2JoinMenuY, 1)
                 Else
@@ -1978,7 +1978,7 @@ Create_D2R_Game111:
                 MouseClick, L
                 Sleep, 100
 
-                ;游戏名称
+                ;Game name
                 MoveYourMouse(BD2RJoinNameX, BD2RJoinNameY, 1)
                 Sleep, 100
                 MouseClick, L
@@ -1994,7 +1994,7 @@ Create_D2R_Game111:
                 Sleep, 100
     
                 Send, {Tab}
-                ;游戏密码
+                ;Game password
                 if (StrLen(BD2RHostPW) > 0)
                 {
                     Sleep, 100
@@ -2053,14 +2053,14 @@ Create_D2R_Game_DC111:
         {
             WinActivate, ahk_id %join_pid%
             Sleep, 100
-            ;处理加入游戏111
-            ;按空格关闭窗口
+            ;Handle join game111
+            ;Press space close window
             Send {Space}
             Sleep, 100
             
             D2R_GamePosition := 0
             Gosub D2R_Check_GamePosition
-            ;检测是否已经打开了快捷菜单
+            ;Detect if quick menu already opened
             if (D2R_GamePosition = 0)
             {
                 MoveYourMouse(BD2RQuickToggleX, BD2RQuickToggleY, 1)
@@ -2069,7 +2069,7 @@ Create_D2R_Game_DC111:
                 Sleep, 100
             }
 
-            ;依次点击左右左
+            ;Click left right left sequentially
             if (D2R_GamePosition = 0)
                 MoveYourMouse(BD2RCreateMenuX, BD2RCreateMenuY, 1)
             Else
@@ -2088,7 +2088,7 @@ Create_D2R_Game_DC111:
             Sleep, 100
             */
 
-            ;游戏名称
+            ;Game name
             if BD2RHostName is Number
             {
                 BD2RHostName++
@@ -2117,7 +2117,7 @@ Create_D2R_Game_DC111:
             Sleep, 100
 
             Send, {Tab}
-            ;游戏密码
+            ;Game password
             if (StrLen(BD2RHostPW) > 0)
             {
                 Sleep, 100
@@ -2131,7 +2131,7 @@ Create_D2R_Game_DC111:
             }
             Sleep, 100
 
-            ;选择难度
+            ;Select difficulty
             if (BD2RGameHostLevel = 1)
                 MoveYourMouse(BD2RNormalX, BD2RNormalY, 1)
             if (BD2RGameHostLevel = 2)
@@ -2142,7 +2142,7 @@ Create_D2R_Game_DC111:
             MouseClick, L
             Sleep, 100
 
-            ;开始创建
+            ;Start create
             Send, {Enter}
             Sleep, 300
             /*
@@ -2174,7 +2174,7 @@ Create_D2R_Game_DC:
         i := i+1
     }
     GuiControlGet, CurrentExitDelay,, BD2RExitDelay
-    ; 判断是否为数字 且 ≥2000
+    ; Judge if number and ≥2000
     if CurrentExitDelay is not number
     {
         CurrentExitDelay := 2000
@@ -2193,14 +2193,14 @@ Create_D2R_Game_DC:
         {
             WinActivate, ahk_id %join_pid%
             Sleep, 100
-            ;处理加入游戏111
-            ;按空格关闭窗口
+            ;Handle join game111
+            ;Press space close window
             Send {Space}
             Sleep, 100
             
             D2R_GamePosition := 0
             Gosub D2R_Check_GamePosition
-            ;D2R_GamePosition=0 在游戏内 =1 在人物界面 =2 在大厅界面
+            ;D2R_GamePosition=0 in game =1 character screen =2 lobby screen
             if (D2R_GamePosition = 0)
             {
                 Send {Esc}
@@ -2221,7 +2221,7 @@ Create_D2R_Game_DC:
                 Gosub D2R_Check_GamePosition
             }
 
-            if (D2R_GamePosition != 2) ;未成功退到大厅界面，则退出流程
+            if (D2R_GamePosition != 2) ;If not successfully exit to lobby screen, exit process
             {
                 i := i+1
                 Continue
@@ -2232,7 +2232,7 @@ Create_D2R_Game_DC:
             MouseClick, L
             Sleep, 100
 
-            ;游戏名称
+            ;Game name
             if BD2RHostName is Number
             {
                 BD2RHostName++
@@ -2261,7 +2261,7 @@ Create_D2R_Game_DC:
             Sleep, 100
 
             Send, {Tab}
-            ;游戏密码
+            ;Game password
             if (StrLen(BD2RHostPW) > 0)
             {
                 Sleep, 100
@@ -2275,7 +2275,7 @@ Create_D2R_Game_DC:
             }
             Sleep, 100
 
-            ;选择难度
+            ;Select difficulty
             if (BD2RGameHostLevel = 1)
                 MoveYourMouse(BD2RNormalX, BD2RNormalY, 1)
             if (BD2RGameHostLevel = 2)
@@ -2286,7 +2286,7 @@ Create_D2R_Game_DC:
             MouseClick, L
             Sleep, 100
 
-            ;开始创建
+            ;Start create
             Send, {Enter}
             Sleep, 300
         }
@@ -2305,11 +2305,11 @@ Create_D2R_Game:
     GuiControlGet, BD2RHostPW
     if (Strlen(BD2RHostName) < 3)
     {
-        MsgBox, 房间名必须大于两位
+        MsgBox, Room name must be more than two characters
         Return
     }
     GuiControlGet, BD2ROnlyJoin
-    ;等待主机创建时间 BD2RHostDelay
+    ;Wait host create time BD2RHostDelay
     GuiControlGet, BD2RHostDelay
     If (BD2RHostDelay is not Number)
         BD2RHostDelay := 500
@@ -2318,7 +2318,7 @@ Create_D2R_Game:
     Else if (BD2RHostDelay > 2000)
         BD2RHostDelay := 1000
     GuiControlGet, CurrentExitDelay,, BD2RExitDelay
-    ; 判断是否为数字 且 ≥2000
+    ; Judge if number and ≥2000
     if CurrentExitDelay is not number
     {
         CurrentExitDelay := 2000
@@ -2378,18 +2378,18 @@ Create_D2R_Game:
             host_pid := BD2RWIN8
             WinActivate, ahk_id %BD2RWIN8%
         }
-        Sleep, 100 ;确保窗口已切换
+        Sleep, 100 ;Ensure window switched
 
         if WinExist("ahk_id " host_pid)
         {
-            ;处理创建游戏
-            ;按空格关闭窗口
+            ;Handle create game
+            ;Press space close window
             Send {Space}
             Sleep, 100
 
             D2R_GamePosition := 0
             Gosub D2R_Check_GamePosition
-            ;D2R_GamePosition=0 在游戏内 =1 在人物界面 =2 在大厅界面
+            ;D2R_GamePosition=0 in game =1 character screen =2 lobby screen
             if (D2R_GamePosition = 0)
             {
                 Send {Esc}
@@ -2410,7 +2410,7 @@ Create_D2R_Game:
                 Gosub D2R_Check_GamePosition
             }
 
-            if (D2R_GamePosition != 2) ;未成功退到大厅界面，则退出流程
+            if (D2R_GamePosition != 2) ;If not successfully exit to lobby screen, exit process
                 Return
 
             MoveYourMouse(BD2RCreateMenuX, BD2RCreateMenuY, 1)
@@ -2418,7 +2418,7 @@ Create_D2R_Game:
             MouseClick, L
             Sleep, 100
 
-            ;游戏名称
+            ;Game name
             if BD2RHostName is Number
             {
                 BD2RHostName++
@@ -2440,7 +2440,7 @@ Create_D2R_Game:
             Sleep, 100
 
             Send, {Tab}
-            ;游戏密码
+            ;Game password
             if (StrLen(BD2RHostPW) > 0)
             {
                 Sleep, 100
@@ -2455,7 +2455,7 @@ Create_D2R_Game:
             }
             Sleep, 100
 
-            ;选择难度
+            ;Select difficulty
             if (BD2RGameHostLevel = 1)
                 MoveYourMouse(BD2RNormalX, BD2RNormalY, 1)
             if (BD2RGameHostLevel = 2)
@@ -2466,17 +2466,17 @@ Create_D2R_Game:
             MouseClick, L
             Sleep, 100
             
-            ;开始创建
+            ;Start create
             Send, {Enter}
             Sleep, 300
         }
         Else
         {
-            MsgBox, 主机窗口不存在，PID： %host_pid%
-            Return ;如果主机窗口不存在，则停止创建
+            MsgBox, Host window not exist, PID: %host_pid%
+            Return ;If host window not exist, stop create
         }
         
-        Sleep, %BD2RHostDelay% ;创建完后，再等一下，以避免加入失败
+        Sleep, %BD2RHostDelay% ;After create, wait a bit to avoid join fail
     }
     i := 1
     While (i <= 8) 
@@ -2496,14 +2496,14 @@ Create_D2R_Game:
             {
                 WinActivate, ahk_id %join_pid%
                 Sleep, 100
-                ;处理加入游戏111
-                ;按空格关闭窗口
+                ;Handle join game111
+                ;Press space close window
                 Send {Space}
                 Sleep, 100
                 
                 D2R_GamePosition := 0
                 Gosub D2R_Check_GamePosition
-                ;D2R_GamePosition=0 在游戏内 =1 在人物界面 =2 在大厅界面
+                ;D2R_GamePosition=0 in game =1 character screen =2 lobby screen
                 if (D2R_GamePosition = 0)
                 {
                     Send {Esc}
@@ -2524,7 +2524,7 @@ Create_D2R_Game:
                     Gosub D2R_Check_GamePosition
                 }
     
-                if (D2R_GamePosition != 2) ;未成功退到大厅界面，则跳过此窗口流程
+                if (D2R_GamePosition != 2) ;If not successfully exit to lobby screen, skip this window process
                 {
                     i := i+1
                     Continue
@@ -2535,7 +2535,7 @@ Create_D2R_Game:
                 MouseClick, L
                 Sleep, 100
 
-                ;游戏名称
+                ;Game name
                 MoveYourMouse(BD2RJoinNameX, BD2RJoinNameY, 1)
                 Sleep, 100
                 MouseClick, L
@@ -2551,7 +2551,7 @@ Create_D2R_Game:
                 Sleep, 100
     
                 Send, {Tab}
-                ;游戏密码
+                ;Game password
                 if (StrLen(BD2RHostPW) > 0)
                 {
                     Sleep, 100
@@ -2586,11 +2586,11 @@ Create_D2R_Game:
 ;------------------------------------------------------------------------------------Create_D2R_Lobby End >
 
 SelectD2RShortcuts:
-    FileSelectFile, files, M3, , 选择暗黑2快捷方式, 快捷方式 (*.lnk)
+    FileSelectFile, files, M3, , Select Diablo2 Shortcuts, Shortcuts (*.lnk)
     if (files = "")
         return
 
-    ; 处理多选结果
+    ; Handle multi select result
     listItems := ""
     baseDir := ""
     Loop, Parse, files, `n
@@ -2608,24 +2608,24 @@ SelectD2RShortcuts:
     GuiControl, , BD2RShortCutList, |%listItems%
 return
 
-; 上移选中的项
+; Move up selected item
 D2RMoveUp:
-    ; 获取当前选中的项
+    ; Get currently selected item
     GuiControlGet, selectedItem,, BD2RShortCutList
 
-    ; 如果未选中任何项，直接返回
+    ; If no item selected, return directly
     if (selectedItem = "")
         return
 
-    ; 获取 ListBox 的 ClassNN
+    ; Get ListBox ClassNN
     GuiControlGet, ListBoxHwnd, Hwnd, BD2RShortCutList
-    ; 获取 ListBox 中所有项的内容
+    ; Get all items content in ListBox
     ControlGet, allItems, List,,, ahk_id %ListBoxHwnd%
 
-    ; 将内容按换行符分隔为数组
+    ; Split content by newline to array
     itemsArray := StrSplit(allItems, "`n")
 
-    ; 查找选中项的索引
+    ; Find selected item index
     selectedIndex := 0
     for index, item in itemsArray {
         if (item = selectedItem) {
@@ -2634,44 +2634,44 @@ D2RMoveUp:
         }
     }
 
-    ; 如果选中项已经是第一项，直接返回
+    ; If selected item is already first item, return directly
     if (selectedIndex <= 1)
         return
 
-    ; 交换选中项和上一项的位置
+    ; Swap selected item and previous item position
     temp := itemsArray[selectedIndex]
     itemsArray[selectedIndex] := itemsArray[selectedIndex - 1]
     itemsArray[selectedIndex - 1] := temp
 
-    ; 将数组重新拼接为字符串
+    ; Rejoin array to string
     newItems := ""
     for index, item in itemsArray {
         newItems .= item . "`n"
     }
     newItems := Trim(newItems, "`n")
 
-    ; 更新 ListBox 的内容
+    ; Update ListBox content
     GuiControl,, BD2RShortCutList, % "|" . StrReplace(newItems, "`n", "|")
 return
 
-; 下移选中的项
+; Move down selected item
 D2RMoveDown:
-    ; 获取当前选中的项
+    ; Get currently selected item
     GuiControlGet, selectedItem,, BD2RShortCutList
 
-    ; 如果未选中任何项，直接返回
+    ; If no item selected, return directly
     if (selectedItem = "")
         return
 
-    ; 获取 ListBox 的 ClassNN
+    ; Get ListBox ClassNN
     GuiControlGet, ListBoxHwnd, Hwnd, BD2RShortCutList
-    ; 获取 ListBox 中所有项的内容
+    ; Get all items content in ListBox
     ControlGet, allItems, List,,, ahk_id %ListBoxHwnd%
 
-    ; 将内容按换行符分隔为数组
+    ; Split content by newline to array
     itemsArray := StrSplit(allItems, "`n")
 
-    ; 查找选中项的索引
+    ; Find selected item index
     selectedIndex := 0
     for index, item in itemsArray {
         if (item = selectedItem) {
@@ -2680,23 +2680,23 @@ D2RMoveDown:
         }
     }
 
-    ; 如果选中项已经是最后一项，直接返回
+    ; If selected item is already last item, return directly
     if (selectedIndex >= itemsArray.Length())
         return
 
-    ; 交换选中项和下一项的位置
+    ; Swap selected item and next item position
     temp := itemsArray[selectedIndex]
     itemsArray[selectedIndex] := itemsArray[selectedIndex + 1]
     itemsArray[selectedIndex + 1] := temp
 
-    ; 将数组重新拼接为字符串
+    ; Rejoin array to string
     newItems := ""
     for index, item in itemsArray {
         newItems .= item . "`n"
     }
     newItems := Trim(newItems, "`n")
 
-    ; 更新 ListBox 的内容
+    ; Update ListBox content
     GuiControl,, BD2RShortCutList, % "|" . StrReplace(newItems, "`n", "|")
 return
 
@@ -2766,11 +2766,11 @@ SetBrowserChrome(browser_name)
 MultiLaunchD2RCNW11:
     GuiControlGet, selectedItems, , BD2RShortCutList
     if (selectedItems = "") {
-        MsgBox 请先选择至少一个快捷方式！
+        MsgBox Please select at least one shortcut first！
         return
     }
 
-    ; 转换列表为数组
+    ; Convert list to array
     paths := []
     count := 0
     Loop, Parse, selectedItems, |
@@ -2782,23 +2782,23 @@ MultiLaunchD2RCNW11:
         }
     }
     if (count > 1) {
-        MsgBox 国服每次只能启动一个实例，请勿选择多个快捷方式！
+        MsgBox CN server can only launch one instance each time, please do not select multiple shortcuts！
         return
     }
 
-    ;获得启动的实例位置--------------------------------------------------------
-    instance_pos := 1 ; 当前启动的是第几个实例
-    ; 使用 GuiControlGet 获取句柄
+    ;Get launch instance position--------------------------------------------------------
+    instance_pos := 1 ; Current launch is which instance
+    ; Use GuiControlGet to get handle
     GuiControlGet, hList, Hwnd, BD2RShortCutList    
     SendMessage, 0x188, 0, 0, , ahk_id %hList%  ; LB_GETCURSEL
     instance_pos := (ErrorLevel + 1)
 
-    ;MsgBox 开始启动，请勿重复点击按钮！
-    MsgBox, 1, 启动游戏, 开始启动，点击确定以继续，请勿重复点击按钮
+    ;MsgBox Start launch, do not click button repeatedly！
+    MsgBox, 1, Launch Game, Start launch, click OK to continue, do not click button repeatedly
     IfMsgBox Cancel
         Return
 
-    ;获得实例位置对应的浏览器序号------------------------------------------------
+    ;Get instance position corresponding browser number------------------------------------------------
     GuiControlGet, BD2RBroswserListName
     pos2str := BD2RBroswserListName
     if (pos2str = "")
@@ -2808,18 +2808,18 @@ MultiLaunchD2RCNW11:
     Else
     {
         array := StrSplit(pos2str, ",")  
-        pos2 := array[instance_pos]  ; 获取第x个值,索引为从1开始
+        pos2 := array[instance_pos]  ; Get xth value, index from 1
         if (pos2 = "")
             pos2 := "EDGE"
     }
 
     SetBrowserChrome(pos2)
 
-    ; 执行批处理式操作
+    ; Execute batch operation
     RunAsAdmin()
     BatchLaunch(paths)
 
-    ; 启动完后获取一次窗口句柄列表
+    ; After launch get window handle list once
     Sleep, 1000
     Gosub, Get_D2R_WIN_ALL
 return
@@ -2827,11 +2827,11 @@ return
 MultiLaunchD2RCN:
     GuiControlGet, selectedItems, , BD2RShortCutList
     if (selectedItems = "") {
-        MsgBox 请先选择至少一个快捷方式！
+        MsgBox Please select at least one shortcut first！
         return
     }
 
-    ; 转换列表为数组
+    ; Convert list to array
     paths := []
     count := 0
     Loop, Parse, selectedItems, |
@@ -2843,23 +2843,23 @@ MultiLaunchD2RCN:
         }
     }
     if (count > 1) {
-        MsgBox 国服每次只能启动一个实例，请勿选择多个快捷方式！
+        MsgBox CN server can only launch one instance each time, please do not select multiple shortcuts！
         return
     }
 
-    ;获得启动的实例位置--------------------------------------------------------
-    instance_pos := 1 ; 当前启动的是第几个实例
-    ; 使用 GuiControlGet 获取句柄
+    ;Get launch instance position--------------------------------------------------------
+    instance_pos := 1 ; Current launch is which instance
+    ; Use GuiControlGet to get handle
     GuiControlGet, hList, Hwnd, BD2RShortCutList    
     SendMessage, 0x188, 0, 0, , ahk_id %hList%  ; LB_GETCURSEL
     instance_pos := (ErrorLevel + 1)
 
-    ;MsgBox 开始启动，请勿重复点击按钮！
-    MsgBox, 1, 启动游戏, 开始启动，点击确定以继续，请勿重复点击按钮
+    ;MsgBox Start launch, do not click button repeatedly！
+    MsgBox, 1, Launch Game, Start launch, click OK to continue, do not click button repeatedly
     IfMsgBox Cancel
         Return
 
-    ;获得实例位置对应的浏览器序号------------------------------------------------
+    ;Get instance position corresponding browser number------------------------------------------------
     pos1 := 5
     pos2 := 1
     GuiControlGet, BD2RBroswserSetPos
@@ -2875,18 +2875,18 @@ MultiLaunchD2RCN:
     Else
     {
         array := StrSplit(pos2str, ",")  
-        pos2 := array[instance_pos]  ; 获取第x个值,索引为从1开始
+        pos2 := array[instance_pos]  ; Get xth value, index from 1
         if (pos2 = "")
             pos2 := 1
     }
 
     ChangeBrowserChrome(pos1, pos2)
 
-    ; 执行批处理式操作
+    ; Execute batch operation
     RunAsAdmin()
     BatchLaunch(paths)
 
-    ; 启动完后获取一次窗口句柄列表
+    ; After launch get window handle list once
     Sleep, 1000
     Gosub, Get_D2R_WIN_ALL
 return
@@ -2894,11 +2894,11 @@ return
 MultiLaunchD2R:
     GuiControlGet, selectedItems, , BD2RShortCutList
     if (selectedItems = "") {
-        MsgBox 请先选择至少一个快捷方式！
+        MsgBox Please select at least one shortcut first！
         return
     }
 
-    ; 转换列表为数组
+    ; Convert list to array
     paths := []
     Loop, Parse, selectedItems, |
     {
@@ -2906,16 +2906,16 @@ MultiLaunchD2R:
             paths.Push(A_LoopField)
     }
 
-    ;MsgBox 开始启动，请勿重复点击按钮！
-    MsgBox, 1, 启动游戏, 开始启动，点击确定以继续，请勿重复点击按钮
+    ;MsgBox Start launch, do not click button repeatedly！
+    MsgBox, 1, Launch Game, Start launch, click OK to continue, do not click button repeatedly
     IfMsgBox Cancel
         Return
 
-    ; 执行批处理式操作
+    ; Execute batch operation
     RunAsAdmin()
     BatchLaunch(paths)
 
-    ; 启动完后获取一次窗口句柄列表
+    ; After launch get window handle list once
     Sleep, 1000
     Gosub, Get_D2R_WIN_ALL
 return
@@ -2932,10 +2932,10 @@ BatchLaunch(paths) {
     if (sleepTimeInMilliseconds > 20000)
         sleepTimeInMilliseconds := 20000
     
-    ; 创建临时作业对象用于管理子进程
+    ; Create temporary job object to manage child processes
     hJob := DllCall("CreateJobObject", "Ptr", 0, "Str", "TempJob", "Ptr")
     if (hJob) {
-        ; 配置作业对象：当作业对象关闭时终止所有子进程
+        ; Configure job object: terminate all child processes when job object closes
         VarSetCapacity(info, 24, 0)
         NumPut(24, info, 0, "UInt")
         NumPut(0x2000, info, 16, "UInt") ; JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
@@ -2947,7 +2947,7 @@ BatchLaunch(paths) {
         currentDir := A_ScriptDir
         handleCmd = "%handlePath%" -a "Check For Other Instances" -nobanner
         
-        ; 将命令进程加入作业对象
+        ; Add command process to job object
         Run, %ComSpec% /c cd /d "%currentDir%" && %handleCmd% > Handle.txt, , Hide, cmdPID
         if (hJob && cmdPID) {
             hProcess := DllCall("OpenProcess", "UInt", 0x0200 | 0x0400, "Int", 0, "UInt", cmdPID, "Ptr")
@@ -2957,18 +2957,18 @@ BatchLaunch(paths) {
             }
         }
         
-        ; 等待命令完成
+        ; Wait command complete
         Process, WaitClose, %cmdPID%
         
         FileRead, rawOutput, Handle.txt
-        Log("【Handle原始输出】`n" rawOutput)
+        Log("【Handle raw output】`n" rawOutput)
         
         CloseAllInstances()
         
         if FileExist(currentLNK) {
-            ; 启动游戏并加入作业对象
+            ; Launch game and add to job object
             Run, "%currentLNK%", , , gamePID
-            Log("启动成功：PID " gamePID " - " currentLNK)
+            Log("Launch success: PID " gamePID " - " currentLNK)
             
             if (hJob && gamePID) {
                 hProcess := DllCall("OpenProcess", "UInt", 0x0200 | 0x0400, "Int", 0, "UInt", gamePID, "Ptr")
@@ -2980,13 +2980,13 @@ BatchLaunch(paths) {
             
             WinWait, Diablo II, , % (secs//1000)
             if ErrorLevel
-                Log("窗口等待超时")
+                Log("Window wait timeout")
             
             Sleep, %sleepTimeInMilliseconds%
         }
     }
     
-    ; 最终清理
+    ; Final cleanup
     Run, %ComSpec% /c cd /d "%A_ScriptDir%" && "%handlePath%" -a "Check For Other Instances" -nobanner > Handle.txt, , Hide, finalCmdPID
     if (hJob && finalCmdPID) {
         hProcess := DllCall("OpenProcess", "UInt", 0x0200 | 0x0400, "Int", 0, "UInt", finalCmdPID, "Ptr")
@@ -2998,7 +2998,7 @@ BatchLaunch(paths) {
     Process, WaitClose, %finalCmdPID%
     CloseAllInstances()
     
-    ; 关闭作业对象，终止所有关联进程
+    ; Close job object, terminate all associated processes
     if (hJob) {
         DllCall("CloseHandle", "Ptr", hJob)
     }
@@ -3007,7 +3007,7 @@ BatchLaunch(paths) {
 CloseAllInstances() {
     global handlePath
     
-    ; 直接处理 Handle.txt
+    ; Directly process Handle.txt
     FileRead, handleOutput, Handle.txt
     
     Loop, Parse, handleOutput, `n, `r
@@ -3034,34 +3034,34 @@ BatchLaunch(paths) {
         sleepTimeInMilliseconds := 20000
     for index, currentLNK in paths
     {
-        ; █ 关键修复1：显式指定工作目录
+        ; █ Key fix1: Explicitly specify working directory
         currentDir := A_ScriptDir
         handleCmd = "%handlePath%" -a "Check For Other Instances" -nobanner
         
-        ; █ 关键修复2：使用完整CMD调用
+        ; █ Key fix2: Use full CMD call
         RunWait, %ComSpec% /c cd /d "%currentDir%" && %handleCmd% > Handle.txt, , Hide
         
-        ; █ 调试：直接记录原始输出
+        ; █ Debug: Directly record raw output
         FileRead, rawOutput, Handle.txt
-        Log("【Handle原始输出】`n" rawOutput)  ; 检查这里是否包含有效内容
+        Log("【Handle raw output】`n" rawOutput)  ; Check if contains valid content here
         
         CloseAllInstances()
         
         if FileExist(currentLNK) {
-            ; █ 关键修复3：标准化路径处理
+            ; █ Key fix3: Standardize path handling
             Run, "%currentLNK%", , , PID
-            Log("启动成功：PID " PID " - " currentLNK)
+            Log("Launch success: PID " PID " - " currentLNK)
             
             WinWait, Diablo II, , % (secs//1000)
             if ErrorLevel
-                Log("窗口等待超时")
+                Log("Window wait timeout")
             
             ;Sleep 10000  
             Sleep, %sleepTimeInMilliseconds%
         }
     }
     
-    ; 最终清理
+    ; Final cleanup
     RunWait, %ComSpec% /c cd /d "%A_ScriptDir%" && "%handlePath%" -a "Check For Other Instances" -nobanner > Handle.txt, , Hide
     CloseAllInstances()
 }
@@ -3069,19 +3069,19 @@ BatchLaunch(paths) {
 CloseAllInstances() {
     global
     
-    ; ███ 定义BAT文件内容 ███
+    ; ███ Define BAT file content ███
     batContent := "@echo off`r`n"
     batContent .= "for /f ""tokens=3,6 delims= "" %%a in (Handle.txt) do handle.exe -p %%a -c %%b -y >>log.txt`r`n"
     
-    ; ███ 将BAT内容写入临时文件 ███
+    ; ███ Write BAT content to temp file ███
     batFile := A_Temp "\CloseHandles.bat"
     FileDelete, %batFile%
     FileAppend, %batContent%, %batFile%
     
-    ; ███ 执行BAT文件 ███
+    ; ███ Execute BAT file ███
     RunWait, %ComSpec% /c "%batFile%", , Hide
     
-    ; ███ 清理临时文件 ███
+    ; ███ Cleanup temp files ███
     FileDelete, %batFile%
     FileDelete, handle.txt
 }
@@ -3092,7 +3092,7 @@ RunAsAdmin() {
             Run *RunAs "%A_ScriptFullPath%"
             ExitApp
         }
-        MsgBox 需要管理员权限运行！
+        MsgBox Need administrator permission to run！
         ExitApp
     }
 }
@@ -3113,7 +3113,7 @@ JoinD2RGameByAccount:
 
 GetControlValue:
 {
-    ;;;;;保存原来的热键，以比较是否更改，自定义热键在更变为新的热键时先恢复原有功能;;;;
+    ;;;;;Save original hotkeys, to compare if changed, custom hotkeys when changed to new hotkey first restore original function;;;;
     tempHotkey3 := BHotkey3
     tempHotkey4 := BHotkey4
     tempHotkey5 := BHotkey5
@@ -3272,7 +3272,7 @@ GetControlValue:
     SetKeyDelay,%BGlobalMouseDelay%
     SetMouseDelay,%BGlobalKeyDelay%
     
-    ;热键如果改变，先禁用原来的
+    ;If hotkey changed, first disable original
     if (tempHotkey3 != BHotkey3)
         Hotkey, %tempHotkey3%, RunHotkey3, off
     if (tempHotkey4 != BHotkey4)
@@ -3304,19 +3304,19 @@ SaveFileCommon:
     if !FileExist( commonIni )
         Return
 
-    ; 获取 ListBox 的 ClassNN
+    ; Get ListBox ClassNN
     GuiControlGet, ListBoxHwnd, Hwnd, BD2RShortCutList
-    ; 获取 ListBox 中所有项的内容
+    ; Get all items content in ListBox
     ControlGet, ListBoxContent, List,,, ahk_id %ListBoxHwnd%
     ListBoxContent := StrReplace(ListBoxContent, "`n", ",")
     IniWrite, %listBoxContent%, %commonIni%, D2R, cfgBD2RShortCutList
-    MsgBox, 保存D2R设置成功!
+    MsgBox, Save D2R settings success!
 
     GuiControlGet, BD2RLaunchDelay
     IniWrite, %BD2RLaunchDelay%, %commonIni%, D2R, cfgBD2RLaunchDelay
     GuiControlGet, BD2RHostDelay
     IniWrite, %BD2RHostDelay%, %commonIni%, D2R, cfgBD2RHostDelay
-    ; 保存 退出等待
+    ; Save exit wait
     GuiControlGet, BD2RExitDelay
     IniWrite, %BD2RExitDelay%, %commonIni%, D2R, cfgBD2RExitDelay
 
@@ -3541,7 +3541,7 @@ SaveFileUserMarco:
             break
         i := i + 1
         GuiControlGet, status_str, UserMarcoSet%marcoNum%: ,BActionArrayIndex%marcoNum%%i%
-        if (ErrorLevel = 1) ;控件不存在或出错
+        if (ErrorLevel = 1) ;Control not exist or error
             break
         
         if (actionArrayStatus%marcoNum%[i] = 1)
@@ -3680,9 +3680,9 @@ ReadFileCommon:
     if !FileExist( commonIni )
         Return
 
-    ; 读取 commonSetting.ini 中 [D2R] 节的 cfgBD2RShortCutList 参数
-    IniRead, cfgBD2RShortCutList, %commonIni%, D2R, cfgBD2RShortCutList, 请选择快捷方式
-    ; 将读取的内容按逗号分隔并填充到 ListBox
+    ; Read cfgBD2RShortCutList parameter in [D2R] section of commonSetting.ini
+    IniRead, cfgBD2RShortCutList, %commonIni%, D2R, cfgBD2RShortCutList, Please select shortcuts
+    ; Split read content by comma and fill into ListBox
     GuiControl,, BD2RShortCutList, % "|" . StrReplace(cfgBD2RShortCutList, ",", "|")
    
     IniRead, BD2RLaunchDelay, %commonIni%, D2R, cfgBD2RLaunchDelay, 5
@@ -3691,7 +3691,7 @@ ReadFileCommon:
     GuiControl, , BD2RHostDelay, %BD2RHostDelay%
     ;IniRead, BD2RShortCutList, %commonIni%, D2R, cfgBD2RShortCutList
     ;GuiControl, , BD2RShortCutList, %BD2RShortCutList%
-    ; 保存 退出等待
+    ; Save exit wait
     IniRead, BD2RExitDelay, %commonIni%, D2R, cfgBD2RExitDelay, 2000
     GuiControl, , BD2RExitDelay, %BD2RExitDelay%
 
@@ -3740,7 +3740,7 @@ ReadFileCommon:
     GuiControl, , BD2RBroswserSetPos, %BD2RBroswserSetPos%
     IniRead, BD2RBroswserListPos, %commonIni%, D2R, cfgBD2RBroswserListPos, 1,2,3,4,5
     GuiControl, , BD2RBroswserListPos, %BD2RBroswserListPos%
-    IniRead, BD2RBroswserListName, %commonIni%, D2R, cfgBD2RBroswserListName, edge,chrome,火狐,360浏览,Q浏览
+    IniRead, BD2RBroswserListName, %commonIni%, D2R, cfgBD2RBroswserListName, edge,chrome,firefox,360,Q
     GuiControl, , BD2RBroswserListName, %BD2RBroswserListName%
 
     Return
@@ -3748,7 +3748,7 @@ ReadFileCommon:
 
 ReadFile:
 {
-    ;选择配置前，如果原来有热键，禁用原来的热键
+    ;Before select config, if original hotkey exist, disable original hotkey
     if (BHotkey3)
         Hotkey, %BHotkey3%, RunHotkey3, off 
     if (BHotkey4)
@@ -4189,7 +4189,7 @@ ReadFile:
     {
         SelectedFile = %A_ScriptDir%\D4.sadan.cfg
         GuiControl, , ConfigPath, %SelectedFile%
-        msgbox "读取配件文件失败"
+        msgbox "Read config file failed"
     }
 	return
 }
@@ -4217,7 +4217,7 @@ ReadFileUserMarco:
                     
                     yValue := 60 + ((i - 1) * 20)
                     
-                    Gui, UserMarcoSet%marcoNum%:Add, CheckBox, x25 y%yValue% h20 vBActionArrayIndex%marcoNum%%i%, 步骤%i%:
+                    Gui, UserMarcoSet%marcoNum%:Add, CheckBox, x25 y%yValue% h20 vBActionArrayIndex%marcoNum%%i%, Step%i%:
                     
                     Gui, UserMarcoSet%marcoNum%:Add, DropDownList, x90 y%yValue% w100 AltSubmit vBActionArrayItem%marcoNum%%i%, %actionItem%
                     GuiControl, UserMarcoSet%marcoNum%:choose, BActionArrayItem%marcoNum%%i%, %item_st%
@@ -4276,17 +4276,17 @@ ReadFileConfigDocument:
 }
 return
 
-;-----------------------------显示宏运行状态--------------------------------------------------
+;-----------------------------Show Macro Running Status--------------------------------------------------
 MyStatusGui:
 {
     global status_window_title = status_title
     Gui statusGui:new, , %status_window_title%
-    CustomColor := "FF0000" ; 可以为任意 RGB 颜色(在下面会被设置为透明)).
-    Gui statusGui: +LastFound +AlwaysOnTop -Caption +ToolWindow ; +ToolWindow 可以避免在任务栏显示按钮，并且不会出现在 alt-tab 菜单中
+    CustomColor := "FF0000" ; Can be any RGB color (will be set transparent below).
+    Gui statusGui: +LastFound +AlwaysOnTop -Caption +ToolWindow ; +ToolWindow avoids taskbar button and alt-tab menu
     Gui, statusGui: Color, %CustomColor%
-    Gui, statusGui: Font, s20 ; 选择字体大小
-    Gui, statusGui: Add, Text, vStatusText cLime , XXXXXXXXXX YY ; XX & YY 可以用来让窗体自动调整大小  
-    WinSet, TransColor, %CustomColor% 150, %status_window_title% ;使指定颜色的像素变得透明，并且使字体本身透明度为150
+    Gui, statusGui: Font, s20 ; Select font size
+    Gui, statusGui: Add, Text, vStatusText cLime , XXXXXXXXXX YY ; XX & YY used for auto adjust window size  
+    WinSet, TransColor, %CustomColor% 150, %status_window_title% ;Make specified color pixels transparent, and font transparency 150
     WinSet, ExStyle, ^0x20, %status_window_title% 
     ;SetTimer, UpdateMarcoStatus, 1000
     if (BEnableStatus = 1)
@@ -4300,22 +4300,22 @@ MyStatusGui:
     
     global info_window_title = info_title
     Gui infoGui:new, , %info_window_title%
-    CustomColor_Info := "FF0000" ; 可以为任意 RGB 颜色(在下面会被设置为透明)).
-    Gui infoGui: +LastFound +AlwaysOnTop -Caption +ToolWindow ; +ToolWindow 可以避免在任务栏显示按钮，并且不会出现在 alt-tab 菜单中
+    CustomColor_Info := "FF0000" ; Can be any RGB color (will be set transparent below).
+    Gui infoGui: +LastFound +AlwaysOnTop -Caption +ToolWindow ; +ToolWindow avoids taskbar button and alt-tab menu
     Gui, infoGui: Color, %CustomColor_Info%
-    Gui, infoGui: Font, s20 ; 选择字体大小
-    Gui, infoGui: Add, Text, vinfoText cLime , XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX YY ; XX & YY 可以用来让窗体自动调整大小  
-    WinSet, TransColor, %CustomColor_Info% 150, %info_window_title% ;使指定颜色的像素变得透明，并且使字体本身透明度为150
+    Gui, infoGui: Font, s20 ; Select font size
+    Gui, infoGui: Add, Text, vinfoText cLime , XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX YY ; XX & YY used for auto adjust window size  
+    WinSet, TransColor, %CustomColor_Info% 150, %info_window_title% ;Make specified color pixels transparent, and font transparency 150
     WinSet, ExStyle, ^0x20, %info_window_title%   
     
     global op_window_title = op_title
     Gui opGui:new, , %op_window_title%
-    CustomColor_Info := "FF0000" ; 可以为任意 RGB 颜色(在下面会被设置为透明)).
-    Gui opGui: +LastFound +AlwaysOnTop -Caption +ToolWindow ; +ToolWindow 可以避免在任务栏显示按钮，并且不会出现在 alt-tab 菜单中
+    CustomColor_Info := "FF0000" ; Can be any RGB color (will be set transparent below).
+    Gui opGui: +LastFound +AlwaysOnTop -Caption +ToolWindow ; +ToolWindow avoids taskbar button and alt-tab menu
     Gui, opGui: Color, %CustomColor_Info%
-    Gui, opGui: Font, s20 ; 选择字体大小
-    Gui, opGui: Add, Text, vopText cLime , XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX YY ; XX & YY 可以用来让窗体自动调整大小  
-    WinSet, TransColor, %CustomColor_Info% 150, %op_window_title% ;使指定颜色的像素变得透明，并且使字体本身透明度为150
+    Gui, opGui: Font, s20 ; Select font size
+    Gui, opGui: Add, Text, vopText cLime , XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX YY ; XX & YY used for auto adjust window size  
+    WinSet, TransColor, %CustomColor_Info% 150, %op_window_title% ;Make specified color pixels transparent, and font transparency 150
     WinSet, ExStyle, ^0x20, %op_window_title% 
     
     
@@ -4352,14 +4352,14 @@ UpdateMarcoStatus:
             status_y := Y + (current_Height - titlebar_height)*1/1000+titlebar_height
             if (boss_Enable = 0)
             {
-                GuiControl, statusGui:, StatusText, D3宏未运行
+                GuiControl, statusGui:, StatusText, Macro not running
             }
             else
             {
-                GuiControl, statusGui:, StatusText, D3宏正在运行中
+                GuiControl, statusGui:, StatusText, Macro is running
             }
             WinSet,Redraw,,%status_window_title%
-            Gui, statusGui:Show, x%status_x% y%status_y% AutoSize NoActivate ; 不激活窗体避免改变当前激活的窗口
+            Gui, statusGui:Show, x%status_x% y%status_y% AutoSize NoActivate ; Do not activate window to avoid changing current active window
             
         }
         else
@@ -4387,13 +4387,13 @@ DisplayInfo(text)
         }
         disp_x := X + current_Width*4/9
         disp_y := Y + (current_Height - titlebar_height)*1/2+titlebar_height
-        ; 设置字体
-        Gui, infoGui:Font, s14 CYellow, Arial  ; 设置字体大小为 10，字体为 Arial
-        ; 刷新控件的字体样式
-        GuiControl, infoGui:Font, infoText  ; 重新应用字体设置
+        ; Set font
+        Gui, infoGui:Font, s14 CYellow, Arial  ; Set font size 10, font Arial
+        ; Refresh control font style
+        GuiControl, infoGui:Font, infoText  ; Reapply font setting
         GuiControl, infoGui:, infoText, %text%
         WinSet,Redraw,,%info_window_title%
-        Gui, infoGui:Show, x%disp_x% y%disp_y% AutoSize NoActivate ; 不激活窗体避免改变当前激活的窗口
+        Gui, infoGui:Show, x%disp_x% y%disp_y% AutoSize NoActivate ; Do not activate window to avoid changing current active window
     }
     else
     {
@@ -4421,7 +4421,7 @@ DisplayOPInfo(text)
         disp_y := (current_Height - titlebar_height)*1/4+titlebar_height
         GuiControl, opGui:, opText, %text%
         WinSet,Redraw,,%op_window_title%
-        Gui, opGui:Show, x%disp_x% y%disp_y% AutoSize NoActivate ; 不激活窗体避免改变当前激活的窗口
+        Gui, opGui:Show, x%disp_x% y%disp_y% AutoSize NoActivate ; Do not activate window to avoid changing current active window
     }
     else
     {
@@ -4437,7 +4437,7 @@ DisplayOPInfoClose()
 
 
 
-;---------------窗口热键-----------------------------------------------------
+;---------------Window Hotkeys-----------------------------------------------------
 #IfWinActive ahk_group GameGroup
 
 XButton1::                            
@@ -4500,19 +4500,19 @@ Return
 }
 Return
 
-^!m:: ; 热键：Ctrl + Alt + M
+^!m:: ; Hotkey: Ctrl + Alt + M
 {
-    ; 获取当前激活窗口句柄
+    ; Get current active window handle
     WinGet, hWnd, ID, A
     if !hWnd {
         return
     }
 
-    ; 恢复窗口状态（如果最大化）
+    ; Restore window state (if maximized)
     WinRestore, ahk_id %hWnd%
     Sleep, 50
 
-    ; 获取工作区（不含任务栏）
+    ; Get work area (excluding taskbar)
     VarSetCapacity(RECT, 16, 0)
     DllCall("SystemParametersInfo", UInt, 0x0030, UInt, 0, Ptr, &RECT)
 
@@ -4524,35 +4524,35 @@ Return
     WorkWidth  := WorkRight - WorkLeft
     WorkHeight := WorkBottom - WorkTop
 
-    ; 获取窗口尺寸
+    ; Get window size
     WinGetPos, WinX, WinY, WinWidth, WinHeight, ahk_id %hWnd%
 
-    ; 计算新位置（左下角对齐）
+    ; Calculate new position (align bottom left)
     NewX := WorkLeft
     NewY := WorkHeight - WinHeight
 
-    ; 限制最小为 0
+    ; Limit min to 0
     NewX := (NewX < 0) ? 0 : NewX
     NewY := (NewY < 0) ? 0 : NewY
 
-    ; 移动窗口
+    ; Move window
     WinMove, ahk_id %hWnd%, , %NewX%, %NewY%
 }
 return
 
-^!/:: ; 热键：Ctrl + Alt + /
+^!/:: ; Hotkey: Ctrl + Alt + /
 {
-    ; 获取当前激活窗口句柄
+    ; Get current active window handle
     WinGet, hWnd, ID, A
     if !hWnd {
         return
     }
 
-    ; 恢复窗口状态（如果最大化）
+    ; Restore window state (if maximized)
     WinRestore, ahk_id %hWnd%
     Sleep, 50
 
-    ; 获取工作区（不含任务栏）
+    ; Get work area (excluding taskbar)
     VarSetCapacity(RECT, 16, 0)
     DllCall("SystemParametersInfo", UInt, 0x0030, UInt, 0, Ptr, &RECT)
 
@@ -4564,18 +4564,18 @@ return
     WorkWidth  := WorkRight - WorkLeft
     WorkHeight := WorkBottom - WorkTop
 
-    ; 获取窗口尺寸
+    ; Get window size
     WinGetPos, WinX, WinY, WinWidth, WinHeight, ahk_id %hWnd%
 
-    ; 计算新位置（右下角对齐）
+    ; Calculate new position (align bottom right)
     NewX := WorkWidth - WinWidth
     NewY := WorkHeight - WinHeight
 
-    ; 限制最小为 0
+    ; Limit min to 0
     NewX := (NewX < 0) ? 0 : NewX
     NewY := (NewY < 0) ? 0 : NewY
 
-    ; 移动窗口
+    ; Move window
     WinMove, ahk_id %hWnd%, , %NewX%, %NewY%
 }
 return
@@ -4624,11 +4624,11 @@ return
 Return
 
 
-;;;;;;;;左键按下;;;;;;;;;;;;;;
+;;;;;;;;Left Button Press;;;;;;;;;;;;;;
 ~*LButton:: 
-; 获取当前时间（以毫秒为单位）
+; Get current time (milliseconds)
 currentTime := A_TickCount
-; 计算自上次按下左键以来的时间间隔
+; Calculate time interval since last left button press
 timeSinceLastClick := currentTime - lastLClickTime    
 lastLClickTime := A_TickCount 
    
@@ -4636,7 +4636,7 @@ If (boss_Enable=0)
 {
     if (BEnableDCL = 3 or BEnableDCL = 4)
     {
-        intInterval := 150 ; 若两次连击在这个时间间隔中，则视为双击。
+        intInterval := 150 ; If two clicks in this interval, consider double click.
         if (A_PriorKey = "LButton" and A_TimeSincePriorHotkey < intInterval) ; 
         ;if (timeSinceLastClick < intInterval) ; 
         {
@@ -4664,7 +4664,7 @@ If (boss_Enable=0)
             {
                 send {%BLMouseKey%}
             }
-            if (BDClickL = 8) ;自定义宏1
+            if (BDClickL = 8) ;Custom macro1
             {
                 marcoAccessKey := "dClickL"
                 Gosub RunUserMarco1
@@ -4701,7 +4701,7 @@ If (boss_Enable=1)
 {
     if (BEnableDCL = 2 or BEnableDCL = 4)
     {
-        intInterval := 200 ; 若两次连击在这个时间间隔中，则视为双击。
+        intInterval := 200 ; If two clicks in this interval, consider double click.
         ;if (timeSinceLastClick < intInterval)
         if (A_PriorKey = "LButton" and A_TimeSincePriorHotkey < intInterval) ; 
         {
@@ -4729,7 +4729,7 @@ If (boss_Enable=1)
             {
                 send {%BLMouseKey%}
             }
-            if (BDClickL = 8) ;自定义宏1
+            if (BDClickL = 8) ;Custom macro1
             {
                 marcoAccessKey := "dClickL"
                 Gosub RunUserMarco1
@@ -4811,25 +4811,25 @@ If (boss_Enable=1)
             selectSkillLabelL := GetModeSkillLabel(bModeL, 1)
             if (IsLabel(selectSkillLabelL))
             {
-                marcoTimerCount := 1 ;循环执行时，将计数器置为1
+                marcoTimerCount := 1 ;When loop execute, set counter to 1
                 SetTimer, %selectSkillLabelL%, 1
             }
         }
     }
-    if (bModeL = 12)    ;拾取连点
+    if (bModeL = 12)    ;Continuous pickup
     {
         GoSub StartPickUp
         SetTimer, MouseLButton, 15
     }
-    if (bModeL = 13)    ;中键切换状态
+    if (bModeL = 13)    ;Middle button switch status
     {
         GoSub MbuttonChangeStatus
     }
-    if (bModeL = 14)    ;闪避
+    if (bModeL = 14)    ;Dodge
     {
         send {space}
     }
-    if (bModeL = 15)   ;第五技能
+    if (bModeL = 15)   ;Skill 5
     {
         send {%BLMouseKey%}
     }
@@ -4856,14 +4856,14 @@ If (boss_Enable=1)
             if (IsLabel(selectSkillLabelL))
             {
                 SetTimer, %selectSkillLabelL%, off
-                ResumeModeSkillLabel(selectSkillLabelL) ;X恢复技能按键状态改用左键松开自定义宏来控制
+                ResumeModeSkillLabel(selectSkillLabelL) ;X restore skill key status use left button release custom macro to control
             }
         }
-        if (bModeL >=7 and bModeL <=11) ;当左键为运行自定义宏时，松开左键要取消宏的循环
+        if (bModeL >=7 and bModeL <=11) ;When left button is run custom macro, release left button to cancel macro loop
         {
             marcoLMouseHold := 0
         }
-        if (BModeReleaseL >=1 and BModeReleaseL <=5)   ;当松开左键选择自定义宏时始终执行
+        if (BModeReleaseL >=1 and BModeReleaseL <=5)   ;When left button release select custom macro always execute
         {
             selectSkillLabelReleaseL := GetModeSkillLabel(BModeReleaseL, 100)
             if (IsLabel(selectSkillLabelReleaseL))
@@ -4872,24 +4872,24 @@ If (boss_Enable=1)
             }
         }
     }
-    if (bModeL = 12)   ;拾取连点
+    if (bModeL = 12)   ;Continuous pickup
     {
         SetTimer, MouseLButton, off
         Gosub EndPickUp
     }
-    if (bModeL = 13 and BMButtonRelease = 2)    ;中键切换状态且松开时恢复
+    if (bModeL = 13 and BMButtonRelease = 2)    ;Middle button switch status and restore on release
     {
         GoSub MbuttonChangeStatus
     }
 }
 Return
-;;;;;;;;左键按下;;;;;;;;;;;;;;
+;;;;;;;;Left Button Press;;;;;;;;;;;;;;
 
-;;;;;;;;右键按下;;;;;;;;;;;;;;
+;;;;;;;;Right Button Press;;;;;;;;;;;;;;
 ~*RButton::  
-; 获取当前时间（以毫秒为单位）
+; Get current time (milliseconds)
 currentTime := A_TickCount
-; 计算自上次按下左键以来的时间间隔
+; Calculate time interval since last left button press
 timeSinceLastClick := currentTime - lastRClickTime    
 lastRClickTime := A_TickCount 
  
@@ -4903,10 +4903,10 @@ lastRClickTime := A_TickCount
     
     If (boss_Enable=0) 
     {
-        ;非运行时右键功能
+        ;Non running right button function
         if ((BEnableDCR = 3 or BEnableDCR = 4))
         {
-            intInterval := 150 ; 若两次连击在这个时间间隔中，则视为双击。
+            intInterval := 150 ; If two clicks in this interval, consider double click.
             ;if (timeSinceLastClick < intInterval)
             if (A_PriorKey = "RButton" and A_TimeSincePriorHotkey < intInterval) ; 
             {
@@ -4934,7 +4934,7 @@ lastRClickTime := A_TickCount
                 {
                     send {%BLMouseKey%}
                 }
-                if (BDClickR = 8) ;自定义宏1
+                if (BDClickR = 8) ;Custom macro1
                 {
                     marcoAccessKey := "dClickR"
                     Gosub RunUserMarco1
@@ -4970,7 +4970,7 @@ lastRClickTime := A_TickCount
     
     If (boss_Enable=1)
     {
-        intInterval := 200 ; 若两次连击在这个时间间隔中，则视为双击。
+        intInterval := 200 ; If two clicks in this interval, consider double click.
         if (A_PriorKey = "RButton" and A_TimeSincePriorHotkey < intInterval and (BEnableDCR = 2 or BEnableDCR = 4)) ;
         ;if (timeSinceLastClick < intInterval and (BEnableDCR = 2 or BEnableDCR = 4))
         {
@@ -4998,7 +4998,7 @@ lastRClickTime := A_TickCount
             {
                 send {%BLMouseKey%}
             }
-            if (BDClickR = 8) ;自定义宏1
+            if (BDClickR = 8) ;Custom macro1
             {
                 marcoAccessKey := "dClickR"
                 Gosub RunUserMarco1
@@ -5079,25 +5079,25 @@ lastRClickTime := A_TickCount
                 selectSkillLabelR := GetModeSkillLabel(bModeR, 2)
                 if (IsLabel(selectSkillLabelR))
                 {
-                    marcoTimerCount := 1 ;循环执行时，将计数器置为1
+                    marcoTimerCount := 1 ;When loop execute, set counter to 1
                     SetTimer, %selectSkillLabelR%, 1
                 }
             }
         }
-        if (bModeR = 12)    ;右键连点
+        if (bModeR = 12)    ;Right continuous click
         {
             GoSub StartPickUp
             SetTimer, MouseRButton, 15
         }
-        if (bModeR = 13)    ;中键切换状态
+        if (bModeR = 13)    ;Middle button switch status
         {
             GoSub MbuttonChangeStatus
         }
-        if (bModeR = 14)    ;闪避
+        if (bModeR = 14)    ;Dodge
         {
             send {space}
         }
-        if (bModeR = 15)   ;第五技能
+        if (bModeR = 15)   ;Skill 5
         {
             send {%BLMouseKey%}
         }
@@ -5112,20 +5112,20 @@ Return
     {
         settimer,gtrack,off           
         ;if (Instr(gtrack, "u") > 0 and Instr(gtrack, "d") <= 0)
-        if (gtrack = "ur") ;先上再右
+        if (gtrack = "ur") ;Up then right first
         {
             gtrack=
             ;send {%BHorseKey%}
             return
         }     
         ;if (Instr(gtrack, "d") > 0 and Instr(gtrack, "u") <= 0)
-        if (gtrack = "dr") ;先下再右
+        if (gtrack = "dr") ;Down then right first
         {
             gtrack=
             ;send {m}
             return
         }
-        if (gtrack = "dru") ;先下再右再上
+        if (gtrack = "dru") ;Down then right then up
         {
             gtrack=
             send {m}
@@ -5153,14 +5153,14 @@ Return
                 if (IsLabel(selectSkillLabelR))
                 {
                     SetTimer, %selectSkillLabelR%, off
-                    ResumeModeSkillLabel(selectSkillLabelR) ;恢复技能按键状态改用右键松开自定义宏来控制
+                    ResumeModeSkillLabel(selectSkillLabelR) ;Restore skill key status use right button release custom macro to control
                 }
             }
-            if (bModeR >=7 and bModeR <=11) ;当右键为运行自定义宏时，松开右键要取消宏的循环
+            if (bModeR >=7 and bModeR <=11) ;When right button is run custom macro, release right button to cancel macro loop
             {
                 marcoRMouseHold := 0
             }
-            if (BModeReleaseR >=1 and BModeReleaseR <=5)   ;当松开左键选择自定义宏时始终执行
+            if (BModeReleaseR >=1 and BModeReleaseR <=5)   ;When left button release select custom macro always execute
             {
                 selectSkillLabelReleaseR := GetModeSkillLabel(BModeReleaseR, 100)
                 if (IsLabel(selectSkillLabelReleaseR))
@@ -5169,26 +5169,26 @@ Return
                 }
             }
         } 
-        if (bModeR = 12)   ;拾取连点
+        if (bModeR = 12)   ;Continuous pickup
         {
             SetTimer, MouseRButton, off
             Gosub EndPickUp
         }
-        if (bModeR = 13 and BMButtonRelease = 2)    ;中键切换状态且松开时恢复
+        if (bModeR = 13 and BMButtonRelease = 2)    ;Middle button switch status and restore on release
         {
             GoSub MbuttonChangeStatus
         }
-        if (bModeR = 14)   ;闪避
+        if (bModeR = 14)   ;Dodge
         {
             send {space}
         }
     }
 }
 Return
-;;;;;;;;右键按下;;;;;;;;;;;;;;
+;;;;;;;;Right Button Press;;;;;;;;;;;;;;
 
-;;;;;;;;中键及切换状态;;;;;;;;;;;;;;;;;;
-;切换状态：
+;;;;;;;;Middle Button and Switch Status;;;;;;;;;;;;;;;;;;
+;Switch Status:
 MbuttonChangeStatus:
 {
     if (boss_Enable=1)
@@ -5447,10 +5447,10 @@ return
 ~*MButton::
 { 
     temp_boss_enable := boss_enable
-    intInterval := 300 ; 若两次连击在这个时间间隔中，则视为双击。
-    if (A_PriorKey = "MButton" and A_TimeSincePriorHotkey < intInterval) ; 必须是直接按中键，而不是其它键触发。
+    intInterval := 300 ; If two clicks in this interval, consider double click.
+    if (A_PriorKey = "MButton" and A_TimeSincePriorHotkey < intInterval) ; Must be direct middle button press, not triggered by other key.
     {
-        if (BEnableGreatRift = 1 and boss_Enable=0) ;此处撕票可改为其他用途（若开启撕票，则未开启宏时双击为撕票）
+        if (BEnableGreatRift = 1 and boss_Enable=0) ;Here can change to other use (if enable rift, when macro not on double click for rift)
         {
             WinGetPos, X, Y, current_Width, current_Height, %BServer%
             sysget titlebar_height, 4, %BServer%
@@ -5459,7 +5459,7 @@ return
                 titlebar_height := 0
             }
             
-            ;鼠标重置到人物中心
+            ;Mouse reset to character center
             put_x := current_Width*1/2
             put_y := (current_Height - titlebar_height)*1/2+titlebar_height
             MouseMove, put_x, put_y, 0 ;
@@ -5468,16 +5468,16 @@ return
         }
         
         /*
-        if (BCancelDC != 1) ;如果双击不作为宏开关，则退出
+        if (BCancelDC != 1) ;If double click not as macro switch, exit
         {
             Gosub F2
-            ;如果是从停到启,且中键为松开时即恢复，则会自动触松开切换，那么手动切换一次以保证初始状态
+            ;If from stop to start, and middle button is restore on release, will auto trigger release switch, then manual switch once to guarantee initial state
             if (temp_boss_enable = 0 and BMButtonRelease = 2) 
                 Gosub MbuttonChangeStatus
             return
         }
         */
-        if (BCancelDC = 1) ;双击为骑马
+        if (BCancelDC = 1) ;Double click for mount
         {
             if (boss_Enable = 1)
             {
@@ -5508,12 +5508,12 @@ If (boss_Enable=1)
     }
 }
 return
-;;;;;;;;中键;;;;;;;;;;;;;;;;;;
+;;;;;;;;Middle Button;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;滚轮上键;;;;;;;;;;;;;;;;;;
+;;;;;;;;Wheel Up;;;;;;;;;;;;;;;;;;
 ~WheelUp::
 {  
-    intInterval := 150 ; 若两次连击在这个时间间隔中，则视为双击。
+    intInterval := 150 ; If two clicks in this interval, consider double click.
     if (A_PriorKey = "WheelUp" and A_TimeSincePriorHotkey < intInterval) ; 
     {
         return
@@ -5545,7 +5545,7 @@ return
         {
             send {%BLMouseKey%}
         }
-        if (BWheelUp = 8) ;自定义宏1
+        if (BWheelUp = 8) ;Custom macro1
         {
             marcoAccessKey := "wheelUp"
             Gosub RunUserMarco1
@@ -5578,8 +5578,8 @@ return
     }
 }
 return
-;;;;;;;;滚轮上键;;;;;;;;;;;;;;;;;;
-;;;;;;;;滚轮下键;;;;;;;;;;;;;;;;;;
+;;;;;;;;Wheel Up;;;;;;;;;;;;;;;;;;
+;;;;;;;;Wheel Down;;;;;;;;;;;;;;;;;;
 ~WheelDown::
 {
     If ((boss_Enable=0 and (BEnableWD = 3 or BEnableWD = 4)) or (boss_Enable=1 and (BEnableWD = 2 or BEnableWD = 4)))
@@ -5608,7 +5608,7 @@ return
         {
             send {%BLMouseKey%}
         }
-        if (BWheelDown = 8) ;自定义宏1
+        if (BWheelDown = 8) ;Custom macro1
         {
             marcoAccessKey := "wheelDown"
             Gosub RunUserMarco1
@@ -5641,7 +5641,7 @@ return
     }
 }
 return
-;;;;;;;;滚轮下键;;;;;;;;;;;;;;;;;;
+;;;;;;;;Wheel Down;;;;;;;;;;;;;;;;;;
 
 ~Enter::  
 ~T::     
@@ -5657,19 +5657,19 @@ Return
 
 ^!J::
 {
-    ; ==== 强制高DPI感知 ====
+    ; ==== Force high DPI awareness ====
     DllCall("SetThreadDpiAwarenessContext", "Ptr", -3)
 
-    ; ==== 获取激活窗口句柄 ====
+    ; ==== Get active window handle ====
     WinGet, hWnd, ID, A
 
-    ; ==== 获取鼠标屏幕坐标（物理像素） ====
+    ; ==== Get mouse screen coord (physical pixels) ====
     VarSetCapacity(POINT, 8)
     DllCall("GetCursorPos", "Ptr", &POINT)
     ScreenX := NumGet(POINT, 0, "Int")
     ScreenY := NumGet(POINT, 4, "Int")
 
-    ; ==== 计算窗口坐标（含边框） ====
+    ; ==== Calculate window coord (including border) ====
     VarSetCapacity(RECT, 16)
     DllCall("GetWindowRect", "Ptr", hWnd, "Ptr", &RECT)
     WinLeft   := NumGet(RECT, 0, "Int")
@@ -5677,21 +5677,21 @@ Return
     WindowX := ScreenX - WinLeft
     WindowY := ScreenY - WinTop
 
-    ; ==== 计算客户端坐标 ====
+    ; ==== Calculate client coord ====
     DllCall("ScreenToClient", "Ptr", hWnd, "Ptr", &POINT)
     ClientX := NumGet(POINT, 0, "Int")
     ClientY := NumGet(POINT, 4, "Int")
 
-    ; ==== 关键修正：获取颜色的正确方式 ====
-    ; 方法1：使用屏幕DC直接读取颜色（绕过窗口权限问题）
-    hDC := DllCall("GetDC", "Ptr", 0) ; 使用屏幕设备上下文
+    ; ==== Key fix: Get color correct way ====
+    ; Method1: Use screen DC direct read color (bypass window permission issue)
+    hDC := DllCall("GetDC", "Ptr", 0) ; Use screen device context
     ColorBGR := DllCall("GetPixel", "Ptr", hDC, "Int", ScreenX, "Int", ScreenY)
     DllCall("ReleaseDC", "Ptr", 0, "Ptr", hDC)
     
-    ; 方法2：如果方法1失效，使用位图捕获（兼容复杂窗口）
-    if (ColorBGR = 0xFFFFFFFF || ColorBGR = -1) ; 如果GetPixel失败
+    ; Method2: If method1 fail, use bitmap capture (compatible complex window)
+    if (ColorBGR = 0xFFFFFFFF || ColorBGR = -1) ; If GetPixel fail
     {
-        ; 使用位图方式捕获颜色
+        ; Use bitmap way capture color
         hDC := DllCall("GetDC", "Ptr", 0)
         hMemDC := DllCall("CreateCompatibleDC", "Ptr", hDC)
         hBitmap := DllCall("CreateCompatibleBitmap", "Ptr", hDC, "Int", 1, "Int", 1)
@@ -5703,10 +5703,10 @@ Return
         DllCall("ReleaseDC", "Ptr", 0, "Ptr", hDC)
     }
 
-    ; 转换BGR到RGB
+    ; Convert BGR to RGB
     ColorRGB := Format("0x{:02X}{:02X}{:02X}", (ColorBGR & 0xFF), (ColorBGR >> 8 & 0xFF), (ColorBGR >> 16 & 0xFF))
 
-    ; ==== 窗口信息 ====
+    ; ==== Window info ====
     WinWidth  := NumGet(RECT, 8, "Int") - WinLeft
     WinHeight := NumGet(RECT, 12, "Int") - WinTop
     VarSetCapacity(ClientRect, 16)
@@ -5717,19 +5717,19 @@ Return
     WinGetClass, Class, ahk_id %hWnd%
     WinGet, PID, PID, ahk_id %hWnd%
 
-    ; 执行除法并保留四位小数
+    ; Execute division and keep 4 decimal places
     resultx := ClientX / ClientW
-    formattedResultx := Format("{1:.4f}", resultx) ; 格式化为四位小数
+    formattedResultx := Format("{1:.4f}", resultx) ; Format to 4 decimal places
     resulty := ClientY / ClientH
-    formattedResulty := Format("{1:.4f}", resulty) ; 格式化为四位小数
+    formattedResulty := Format("{1:.4f}", resulty) ; Format to 4 decimal places
 
     result := formattedResultx " " formattedResulty " 0x" ColorRGB
 
-    ; 将结果复制到剪贴板
+    ; Copy result to clipboard
     Clipboard := result
-    ClipWait, 1 ; 等待剪贴板更新（最多1秒）
+    ClipWait, 1 ; Wait clipboard update (max 1 second)
 
-    ; ==== 输出 ====
+    ; ==== Output ====
     /*
     ToolTip,
     (
@@ -5826,25 +5826,25 @@ GetConfigSetting:
 {
     Gosub, ReadFile
     Gosub, GetUserMarco
-    DisplayInfo("配置已切换至：" . SelectedFile)
+    DisplayInfo("Config switched to: " . SelectedFile)
     Sleep (1000)
     DisplayInfoClose()
     Return
 }
 
 #IfWinActive
-;---------------结束窗口热键-----------------------------------------------------
+;---------------End Window Hotkeys-----------------------------------------------------
 
 
-;---------------全局热键-----------------------------------------------------
+;---------------Global Hotkeys-----------------------------------------------------
 
-!1:: ; !表示alt键
+!1:: ; ! means alt key
 {
 	GuiControlGet, BD2RWIN1
     hwnd_t := BD2RWIN1
-    ; 使用 ahk_id 来指定窗口并激活它
+    ; Use ahk_id to specify window and activate it
     WinActivate, ahk_id %hwnd_t%
-    Sleep, 100 ; 等待一小段时间以确保窗口已置顶
+    Sleep, 100 ; Wait a bit to ensure window on top
     Return
 }
 
@@ -5852,9 +5852,9 @@ GetConfigSetting:
 {
 	GuiControlGet, BD2RWIN2
     hwnd_t := BD2RWIN2
-    ; 使用 ahk_id 来指定窗口并激活它
+    ; Use ahk_id to specify window and activate it
     WinActivate, ahk_id %hwnd_t%
-    Sleep, 100 ; 等待一小段时间以确保窗口已置顶
+    Sleep, 100 ; Wait a bit to ensure window on top
     Return
 }
 
@@ -5862,9 +5862,9 @@ GetConfigSetting:
 {
 	GuiControlGet, BD2RWIN3
     hwnd_t := BD2RWIN3
-    ; 使用 ahk_id 来指定窗口并激活它
+    ; Use ahk_id to specify window and activate it
     WinActivate, ahk_id %hwnd_t%
-    Sleep, 100 ; 等待一小段时间以确保窗口已置顶
+    Sleep, 100 ; Wait a bit to ensure window on top
     Return
 }
 
@@ -5872,9 +5872,9 @@ GetConfigSetting:
 {
 	GuiControlGet, BD2RWIN4
     hwnd_t := BD2RWIN4
-    ; 使用 ahk_id 来指定窗口并激活它
+    ; Use ahk_id to specify window and activate it
     WinActivate, ahk_id %hwnd_t%
-    Sleep, 100 ; 等待一小段时间以确保窗口已置顶
+    Sleep, 100 ; Wait a bit to ensure window on top
     Return
 }
 
@@ -5882,9 +5882,9 @@ GetConfigSetting:
 {
 	GuiControlGet, BD2RWIN5
     hwnd_t := BD2RWIN5
-    ; 使用 ahk_id 来指定窗口并激活它
+    ; Use ahk_id to specify window and activate it
     WinActivate, ahk_id %hwnd_t%
-    Sleep, 100 ; 等待一小段时间以确保窗口已置顶
+    Sleep, 100 ; Wait a bit to ensure window on top
     Return
 }
 
@@ -5892,9 +5892,9 @@ GetConfigSetting:
 {
 	GuiControlGet, BD2RWIN6
     hwnd_t := BD2RWIN6
-    ; 使用 ahk_id 来指定窗口并激活它
+    ; Use ahk_id to specify window and activate it
     WinActivate, ahk_id %hwnd_t%
-    Sleep, 100 ; 等待一小段时间以确保窗口已置顶
+    Sleep, 100 ; Wait a bit to ensure window on top
     Return
 }
 
@@ -5902,9 +5902,9 @@ GetConfigSetting:
 {
 	GuiControlGet, BD2RWIN7
     hwnd_t := BD2RWIN7
-    ; 使用 ahk_id 来指定窗口并激活它
+    ; Use ahk_id to specify window and activate it
     WinActivate, ahk_id %hwnd_t%
-    Sleep, 100 ; 等待一小段时间以确保窗口已置顶
+    Sleep, 100 ; Wait a bit to ensure window on top
     Return
 }
 
@@ -5912,34 +5912,34 @@ GetConfigSetting:
 {
 	GuiControlGet, BD2RWIN8
     hwnd_t := BD2RWIN8
-    ; 使用 ahk_id 来指定窗口并激活它
+    ; Use ahk_id to specify window and activate it
     WinActivate, ahk_id %hwnd_t%
-    Sleep, 100 ; 等待一小段时间以确保窗口已置顶
+    Sleep, 100 ; Wait a bit to ensure window on top
     Return
 }
 
-^b::  ; Ctrl+B 热键
+^b::  ; Ctrl+B hotkey
 {
-    WinActivate, ahk_exe D4Auto.exe  ; 激活进程名为 D4Auto.exe 的窗口
-    WinActivate, ahk_exe D2GO.exe  ; 激活进程名为 D4Auto.exe 的窗口
+    WinActivate, ahk_exe D4Auto.exe  ; Activate process named D4Auto.exe window
+    WinActivate, ahk_exe D2GO.exe  ; Activate process named D4Auto.exe window
 }
 return
 
 ^!l::
 {
-    ; ==== 强制高DPI感知 ====
+    ; ==== Force high DPI awareness ====
     DllCall("SetThreadDpiAwarenessContext", "Ptr", -3)
 
-    ; ==== 获取激活窗口句柄 ====
+    ; ==== Get active window handle ====
     WinGet, hWnd, ID, A
 
-    ; ==== 获取鼠标屏幕坐标（物理像素） ====
+    ; ==== Get mouse screen coord (physical pixels) ====
     VarSetCapacity(POINT, 8)
     DllCall("GetCursorPos", "Ptr", &POINT)
     ScreenX := NumGet(POINT, 0, "Int")
     ScreenY := NumGet(POINT, 4, "Int")
 
-    ; ==== 计算窗口坐标（含边框） ====
+    ; ==== Calculate window coord (including border) ====
     VarSetCapacity(RECT, 16)
     DllCall("GetWindowRect", "Ptr", hWnd, "Ptr", &RECT)
     WinLeft   := NumGet(RECT, 0, "Int")
@@ -5947,21 +5947,21 @@ return
     WindowX := ScreenX - WinLeft
     WindowY := ScreenY - WinTop
 
-    ; ==== 计算客户端坐标 ====
+    ; ==== Calculate client coord ====
     DllCall("ScreenToClient", "Ptr", hWnd, "Ptr", &POINT)
     ClientX := NumGet(POINT, 0, "Int")
     ClientY := NumGet(POINT, 4, "Int")
 
-    ; ==== 关键修正：获取颜色的正确方式 ====
-    ; 方法1：使用屏幕DC直接读取颜色（绕过窗口权限问题）
-    hDC := DllCall("GetDC", "Ptr", 0) ; 使用屏幕设备上下文
+    ; ==== Key fix: Get color correct way ====
+    ; Method1: Use screen DC direct read color (bypass window permission issue)
+    hDC := DllCall("GetDC", "Ptr", 0) ; Use screen device context
     ColorBGR := DllCall("GetPixel", "Ptr", hDC, "Int", ScreenX, "Int", ScreenY)
     DllCall("ReleaseDC", "Ptr", 0, "Ptr", hDC)
     
-    ; 方法2：如果方法1失效，使用位图捕获（兼容复杂窗口）
-    if (ColorBGR = 0xFFFFFFFF || ColorBGR = -1) ; 如果GetPixel失败
+    ; Method2: If method1 fail, use bitmap capture (compatible complex window)
+    if (ColorBGR = 0xFFFFFFFF || ColorBGR = -1) ; If GetPixel fail
     {
-        ; 使用位图方式捕获颜色
+        ; Use bitmap way capture color
         hDC := DllCall("GetDC", "Ptr", 0)
         hMemDC := DllCall("CreateCompatibleDC", "Ptr", hDC)
         hBitmap := DllCall("CreateCompatibleBitmap", "Ptr", hDC, "Int", 1, "Int", 1)
@@ -5973,10 +5973,10 @@ return
         DllCall("ReleaseDC", "Ptr", 0, "Ptr", hDC)
     }
 
-    ; 转换BGR到RGB
+    ; Convert BGR to RGB
     ColorRGB := Format("0x{:02X}{:02X}{:02X}", (ColorBGR & 0xFF), (ColorBGR >> 8 & 0xFF), (ColorBGR >> 16 & 0xFF))
 
-    ; ==== 窗口信息 ====
+    ; ==== Window info ====
     WinWidth  := NumGet(RECT, 8, "Int") - WinLeft
     WinHeight := NumGet(RECT, 12, "Int") - WinTop
     VarSetCapacity(ClientRect, 16)
@@ -5987,19 +5987,19 @@ return
     WinGetClass, Class, ahk_id %hWnd%
     WinGet, PID, PID, ahk_id %hWnd%
 
-    ; 执行除法并保留四位小数
+    ; Execute division and keep 4 decimal places
     resultx := ClientX / ClientW
-    formattedResultx := Format("{1:.4f}", resultx) ; 格式化为四位小数
+    formattedResultx := Format("{1:.4f}", resultx) ; Format to 4 decimal places
     resulty := ClientY / ClientH
-    formattedResulty := Format("{1:.4f}", resulty) ; 格式化为四位小数
+    formattedResulty := Format("{1:.4f}", resulty) ; Format to 4 decimal places
 
     result := formattedResultx ", " formattedResulty " " ColorRGB
 
-    ; 将结果复制到剪贴板
+    ; Copy result to clipboard
     Clipboard := result
-    ClipWait, 1 ; 等待剪贴板更新（最多1秒）
+    ClipWait, 1 ; Wait clipboard update (max 1 second)
 
-    ; ==== 输出 ====
+    ; ==== Output ====
     /*
     ToolTip,
     (
@@ -6020,7 +6020,7 @@ return
 */
     return
 }
-;---------------结束全局热键-------------------------------------------------
+;---------------End Global Hotkeys-------------------------------------------------
 
 gtrack:
 {
@@ -6063,14 +6063,14 @@ RunHotkey3:
             if (Hotkey3_enable)
             {
                 SetTimer, %selectSkillLabel%, 1
-                ;DisplayOPInfo("自定义宏已开始循环")
+                ;DisplayOPInfo("Custom macro started loop")
                 ;Sleep 1000
                 ;DisplayOPInfoClose()
             }
             else
             {
                 SetTimer, %selectSkillLabel%, off
-                ;DisplayOPInfo("自定义宏已关闭循环")
+                ;DisplayOPInfo("Custom macro closed loop")
                 ;Sleep 1000
                 ;DisplayOPInfoClose()
             }
@@ -6129,14 +6129,14 @@ RunHotkey4:
             if (Hotkey4_enable)
             {
                 SetTimer, %selectSkillLabel%, 1
-                ;DisplayOPInfo("自定义宏已开始循环")
+                ;DisplayOPInfo("Custom macro started loop")
                 ;Sleep 1000
                 ;DisplayOPInfoClose()
             }
             else
             {
                 SetTimer, %selectSkillLabel%, off
-                ;DisplayOPInfo("自定义宏已关闭循环")
+                ;DisplayOPInfo("Custom macro closed loop")
                 ;Sleep 1000
                 ;DisplayOPInfoClose()
             }
@@ -6189,14 +6189,14 @@ RunHotkey5:
             if (Hotkey5_enable)
             {
                 SetTimer, %selectSkillLabel%, 1
-                ;DisplayOPInfo("自定义宏已开始循环")
+                ;DisplayOPInfo("Custom macro started loop")
                 ;Sleep 1000
                 ;DisplayOPInfoClose()
             }
             else
             {
                 SetTimer, %selectSkillLabel%, off
-                ;DisplayOPInfo("自定义宏已关闭循环")
+                ;DisplayOPInfo("Custom macro closed loop")
                 ;Sleep 1000
                 ;DisplayOPInfoClose()
             }
@@ -6234,7 +6234,7 @@ LabelX:
     Return
 }
 
-;旧机制标签
+;Old mechanism labels
 /*
 Label1:                                                  
 {
@@ -6554,7 +6554,7 @@ KeepSkillBuff:
         if (buffColor[2] < 95)
             send {%BSkillKey4%}
     }
-    if (BKeepL = 1) ;左键
+    if (BKeepL = 1) ;Left button
     {
         buffColor := GetSkillBuffStatus(5)
         if (buffColor[2] < 95)
@@ -6586,16 +6586,16 @@ LabelCheckInPeace:
     {
         other_enable := 0
         
-        ;;;;;;;;;;;;;;;;;;;;;自动关闭奖励窗口;;;;;;;;;;;;;;;;;;;;
+        ;;;;;;;;;;;;;;;;;;;;;Auto close reward window;;;;;;;;;;;;;;;;;;;;
         SetTimer, LabelAutoCloseWin, off
         LabelAutoCloseWin_status := 0
-        ;;;;;;;;;;;;;;;;;;;;;自动关闭奖励窗口 End;;;;;;;;;;;;;;;;
+        ;;;;;;;;;;;;;;;;;;;;;Auto close reward window End;;;;;;;;;;;;;;;;
     }
     else
     {
         other_enable := 1
         
-        ;;;;;;;;;;;;;;;;;;;;;自动关闭奖励窗口;;;;;;;;;;;;;;;;;;;;
+        ;;;;;;;;;;;;;;;;;;;;;Auto close reward window;;;;;;;;;;;;;;;;;;;;
         if (BAutoCloseWin = 1 and LabelAutoCloseWin_status = 0)
         {
             SetTimer, LabelAutoCloseWin, 800 
@@ -6606,7 +6606,7 @@ LabelCheckInPeace:
             SetTimer, LabelAutoCloseWin, off 
             LabelAutoCloseWin_status := 0
         }
-        ;;;;;;;;;;;;;;;;;;;;;自动关闭奖励窗口 End;;;;;;;;;;;;;;;;
+        ;;;;;;;;;;;;;;;;;;;;;Auto close reward window End;;;;;;;;;;;;;;;;
     }
     ;msgbox, %other_enable% %BAutoCloseWin% %LabelAutoCloseWin_status%
 }
@@ -6630,7 +6630,7 @@ LabelAutoCloseWin:
         titlebar_height := 0
     }
     
-    ;检测是否有奖励窗口
+    ;Detect if reward window
     s_x := current_Width*1207/2560
     s_y := (current_Height - titlebar_height)*1194/1440+titlebar_height
     e_x := current_Width*1344/2560
@@ -6638,7 +6638,7 @@ LabelAutoCloseWin:
     PixelSearch, Px, Py, s_x, s_y, e_x, e_y, 0xDE974B, 3, Fast RGB ;
     if (ErrorLevel = 0)
     {        
-        ;检测是否地图窗口
+        ;Detect if map window
         s_x := current_Width*1227/2560
         s_y := (current_Height - titlebar_height)*131/1440+titlebar_height
         e_x := current_Width*1343/2560
@@ -6650,7 +6650,7 @@ LabelAutoCloseWin:
         }
     }
 
-    ;检测是否有对话窗口
+    ;Detect if dialog window
     s_x := current_Width*1665/2560
     s_y := (current_Height - titlebar_height)*1032/1440+titlebar_height
     e_x := current_Width*1727/2560
@@ -6665,39 +6665,39 @@ LabelAutoCloseWin:
 }
 
 ; ==============================================
-; 按钮点击：注册热键
+; Button click: Register hotkey
 ; ==============================================
 HotKeyRegister:
     ;Return
-    Gui Submit, NoHide  ; 获取界面输入内容
+    Gui Submit, NoHide  ; Get interface input content
 
     if (Hotkey = "") {
-        MsgBox, 热键不能为空！
+        MsgBox, Hotkey cannot be empty！
         return
     }
 
-    ; 关闭上一次热键
+    ; Close last hotkey
     if (LastHotkey != "")
         Hotkey, %LastHotkey%, Off
 
-    ; 绑定新热键（防错）
+    ; Bind new hotkey (error proof)
     Try {
         Hotkey, %Hotkey%, RunSelectedFunc
     } Catch {
-        MsgBox, 热键格式错误！`n例如：F1、^s、!a、+d
+        MsgBox, Hotkey format error！`nExample：F1、^s、!a、+d
         return
     }
-    LastHotkey := Hotkey  ; 保存最后绑定的热键
+    LastHotkey := Hotkey  ; Save last bound hotkey
 
-    MsgBox, 已绑定：%Hotkey% → %FuncName%
+    MsgBox, Bound：%Hotkey% → %FuncName%
 return
 
 ; ==============================================
-; 热键触发：自动运行选中的函数
+; Hotkey trigger: Auto run selected function
 ; ==============================================
 RunSelectedFunc:
     Gui Submit, NoHide
-    Gosub %FuncName%  ; 执行下拉框选中的函数
+    Gosub %FuncName%  ; Execute dropdown selected function
 return
 
 RunUserMarco1:
@@ -6719,7 +6719,7 @@ RunUserMarco1:
         {
             if (marcoAccessKey = "")
                 break
-            ;1-不执行|2-运行时|3-非运行时|4-任意时
+            ;1-Disable|2-When running|3-When not running|4-Any time
             if (marcoAccessKey = "dClickL" and (BEnableDCL = 1 or BEnableDCL =2))
                 Break
             if (marcoAccessKey = "dClickR" and (BEnableDCR = 1 or BEnableDCR =2))
@@ -6731,7 +6731,7 @@ RunUserMarco1:
         }
         If (boss_Enable = 1) 
         {
-            ;左键按下设为宏1，且左键已松开 | 右键按下设为宏1，且右键已松开
+            ;Left button hold set to macro1, and left button already released | Right button hold set to macro1, and right button already released
             if (bModeL = 7 and marcoLMouseHold = 0)
                 Break
             if (bModeR = 7 and marcoRMouseHold = 0)
@@ -6742,20 +6742,20 @@ RunUserMarco1:
             break
         action := actionArray1[i][1]
         content := actionArray1[i][2]
-        if (action = 1)                           ;按键
+        if (action = 1)                           ;Key
             ;send {%content%}  
             Send {%content%}
-        if (action = 2)                           ;按下  
+        if (action = 2)                           ;Hold  
         {
             ;send {%content% down}
             Send {%content% down}
         }
-        if (action = 3)                           ;松开
+        if (action = 3)                           ;Release
         {
             ;send {%content% up}
             Send {%content% up}
         }
-        if (action = 4)                           ;等待 最大不超过20秒 将大于1秒的等待时间拆分为0.1秒的单位，以避免后台等待太久
+        if (action = 4)                           ;Wait max not exceed 20 seconds Split wait time >1 second to 0.1 second units, to avoid background wait too long
         {
             Sleep %content% 
             /*
@@ -6775,44 +6775,44 @@ RunUserMarco1:
                 Sleep %content% 
                 */
         }
-        if (action = 5)                           ;发送文本
+        if (action = 5)                           ;Send text
         {
             ;send {Text} %content% 
             sendinput, %content% 
         }
-        if (action = 6)                           ;自定义语句
+        if (action = 6)                           ;Custom statement
         {
             ahkExec(content)
         }
-        if (action = 7)                           ;暂停宏
+        if (action = 7)                           ;Pause macro
         {
             EndFunc()
         }
-        if (action = 8)                           ;关闭宏
+        if (action = 8)                           ;Close macro
         {
             boss_Enable=0
         }
-        if (action = 9)                           ;屏幕显示信息
+        if (action = 9)                           ;Screen show info
         {
             DisplayInfo(content)
         }
-        if (action = 10)                          ;关闭屏幕显示信息
+        if (action = 10)                          ;Close screen show info
         {
             DisplayInfoClose()
         }
-        if (action = 11)                          ;占位
+        if (action = 11)                          ;Placeholder
         {
         }
-        if (action = 12)                          ;更换技能
+        if (action = 12)                          ;Change skill
         {
             ChangeSkill(content)
         }
-        if (action = 13)                          ;仅第一次运行的语句，自定义宏循环执行时不再执行
+        if (action = 13)                          ;Only first run statement, custom macro loop execute no longer execute
         {
             if (marcoTimerCount = 1) 
                 ahkExec(content)
         }
-        if (action = 14)                          ;连按技能
+        if (action = 14)                          ;Continuous skill
         {
             switch content
             {
@@ -6831,10 +6831,10 @@ RunUserMarco1:
                 case "5":
                     setTimer, LabelMouseL, %BDelayMouseL% 
                 ;Default:
-                    ;LoopAnyKey(p_key, p_time, 1) ;参数1-按键，参数2-间隔，参数3- 1开始，2停止
+                    ;LoopAnyKey(p_key, p_time, 1) ;Parameter1-Key, Parameter2-Interval, Parameter3- 1Start,2Stop
             }
         }
-        if (action = 15)                          ;停止连按技能
+        if (action = 15)                          ;Stop continuous skill
         {
             switch content
             {
@@ -6853,10 +6853,10 @@ RunUserMarco1:
                 case "5":
                     setTimer, LabelMouseL, off
                 ;Default:
-                    ;LoopAnyKey(p_key, p_time, 2) ;参数1-按键，参数2-间隔，参数3- 1开始，2停止
+                    ;LoopAnyKey(p_key, p_time, 2) ;Parameter1-Key, Parameter2-Interval, Parameter3- 1Start,2Stop
             }
         }
-        if (action = 16)                          ;发送多次按键
+        if (action = 16)                          ;Send multiple keys
         {
             keyArray := StrSplit(content, ",", ,3)
             v1 := keyArray[1]
@@ -6864,7 +6864,7 @@ RunUserMarco1:
             v3 := keyArray[3]
             SendMultiKey(v1, v2, v3)
         }
-        if (action = 17)                          ;鼠标转圈，参数1-角度，参数2-比例, 参数3-时间间隔，参数4-要发送的按键
+        if (action = 17)                          ;Mouse circle, parameter1-Angle, parameter2-Ratio, parameter3-Time interval, parameter4-Key to send
         {
             directionArray := StrSplit(content, ",", ,5)
             d1 := directionArray[1]
@@ -6874,14 +6874,14 @@ RunUserMarco1:
             d5 := directionArray[5]
             CircleMouse(d1, d2, d3, d4, d5)
         }
-        if (action = 18)                          ;鼠标移动，参数1-X轴比例，参数2-Y轴比例，参数3- 1比例值;2像素值
+        if (action = 18)                          ;Mouse move, parameter1-X axis ratio, parameter2-Y axis ratio, parameter3- 1Ratio value;2Pixel value
         {
             pointArray := StrSplit(content, ",", ,2)
             d1 := pointArray[1]
             d2 := pointArray[2]
             MoveYourMouse(d1, d2, 1)
         }
-        if (action = 19)                          ;随机按键
+        if (action = 19)                          ;Random key
         {
             randamKeyArray := StrSplit(content, ",")  
             arrayLength := randamKeyArray.MaxIndex()
@@ -6889,15 +6889,15 @@ RunUserMarco1:
             keyFinal := randamKeyArray[randomNumber]
             Send {%keyFinal%}
         }
-        if (action = 20)                          ;保存鼠标位置
+        if (action = 20)                          ;Save mouse position
         {
             MouseGetPos, savedMousePosionX, savedMousePosionY
         }
-        if (action = 21)                          ;恢复鼠标位置
+        if (action = 21)                          ;Restore mouse position
         {
             MouseMove, %savedMousePosionX%, %savedMousePosionY%
         }
-        if (action = 22)                          ;遍历背包
+        if (action = 22)                          ;Loop backpack
         {
             bagArray := StrSplit(content, ",", ,8)
             d1 := bagArray[1]
@@ -6911,7 +6911,7 @@ RunUserMarco1:
             LoopBagAction(d1, d2, d3, d4, d5, d6, d7, d8)
         }
     }
-    ;仅当循环执行宏时有效，单次运行的宏将不运行，将左/右键按下时，此计数器将会置为1
+    ;Only effective when loop execute macro, single run macro will not run, when left/right button hold, this counter will be set to 1
     marcoTimerCount := marcoTimerCount + 1
     marcoAccessKey := ""
     return
@@ -6956,20 +6956,20 @@ RunUserMarco2:
             break
         action := actionArray2[i][1]
         content := actionArray2[i][2]
-        if (action = 1)                           ;按键
+        if (action = 1)                           ;Key
             ;send {%content%}  
             Send {%content%}
-        if (action = 2)                           ;按下  
+        if (action = 2)                           ;Hold  
         {
             ;send {%content% down}
             Send {%content% down}
         }
-        if (action = 3)                           ;松开
+        if (action = 3)                           ;Release
         {
             ;send {%content% up}
             Send {%content% up}
         }
-        if (action = 4)                           ;等待 最大不超过20秒 将大于1秒的等待时间拆分为0.1秒的单位，以避免后台等待太久
+        if (action = 4)                           ;Wait max not exceed 20 seconds Split wait time >1 second to 0.1 second units, to avoid background wait too long
         {
             Sleep %content% 
             /*
@@ -6989,44 +6989,44 @@ RunUserMarco2:
                 Sleep %content% 
                 */
         }
-        if (action = 5)                           ;发送文本
+        if (action = 5)                           ;Send text
         {
             ;send {Text} %content% 
             sendinput, %content% 
         }
-        if (action = 6)                           ;自定义语句
+        if (action = 6)                           ;Custom statement
         {
             ahkExec(content)
         }
-        if (action = 7)                           ;暂停宏
+        if (action = 7)                           ;Pause macro
         {
             EndFunc()
         }
-        if (action = 8)                           ;关闭宏
+        if (action = 8)                           ;Close macro
         {
             boss_Enable=0
         }
-        if (action = 9)                           ;屏幕显示信息
+        if (action = 9)                           ;Screen show info
         {
             DisplayInfo(content)
         }
-        if (action = 10)                          ;关闭屏幕显示信息
+        if (action = 10)                          ;Close screen show info
         {
             DisplayInfoClose()
         }
-        if (action = 11)                          ;占位
+        if (action = 11)                          ;Placeholder
         {
         }
-        if (action = 12)                          ;更换技能
+        if (action = 12)                          ;Change skill
         {
             ChangeSkill(content)
         }
-        if (action = 13)                          ;仅第一次运行的语句，循环执行时不再执行
+        if (action = 13)                          ;Only first run statement, loop execute no longer execute
         {
             if (marcoTimerCount = 1)
                 ahkExec(content)
         }
-        if (action = 14)                          ;连按技能
+        if (action = 14)                          ;Continuous skill
         {
             ;if (content = "1")
             switch content
@@ -7047,7 +7047,7 @@ RunUserMarco2:
                     setTimer, LabelMouseL, %BDelayMouseL% 
             }
         }
-        if (action = 15)                          ;停止连按技能
+        if (action = 15)                          ;Stop continuous skill
         {
             switch content
             {
@@ -7067,7 +7067,7 @@ RunUserMarco2:
                     setTimer, LabelMouseL, off
             }
         }
-        if (action = 16)                          ;发送多次按键
+        if (action = 16)                          ;Send multiple keys
         {
             keyArray := StrSplit(content, ",", ,3)
             v1 := keyArray[1]
@@ -7075,7 +7075,7 @@ RunUserMarco2:
             v3 := keyArray[3]
             SendMultiKey(v1, v2, v3)
         }
-        if (action = 17)                          ;鼠标转圈，参数1-角度，参数2-比例, 参数3-时间间隔，参数4-要发送的按键
+        if (action = 17)                          ;Mouse circle, parameter1-Angle, parameter2-Ratio, parameter3-Time interval, parameter4-Key to send
         {
             directionArray := StrSplit(content, ",", ,5)
             d1 := directionArray[1]
@@ -7085,14 +7085,14 @@ RunUserMarco2:
             d5 := directionArray[5]
             CircleMouse(d1, d2, d3, d4, d5)
         }
-        if (action = 18)                          ;鼠标移动，参数1-X轴比例，参数2-Y轴比例，参数3- 1比例值;2像素值
+        if (action = 18)                          ;Mouse move, parameter1-X axis ratio, parameter2-Y axis ratio, parameter3- 1Ratio value;2Pixel value
         {
             pointArray := StrSplit(content, ",", ,2)
             d1 := pointArray[1]
             d2 := pointArray[2]
             MoveYourMouse(d1, d2, 1)
         }
-        if (action = 19)                          ;随机按键
+        if (action = 19)                          ;Random key
         {
             randamKeyArray := StrSplit(content, ",")  
             arrayLength := randamKeyArray.MaxIndex()
@@ -7100,15 +7100,15 @@ RunUserMarco2:
             keyFinal := randamKeyArray[randomNumber]
             Send {%keyFinal%}
         }
-        if (action = 20)                          ;保存鼠标位置
+        if (action = 20)                          ;Save mouse position
         {
             MouseGetPos, savedMousePosionX, savedMousePosionY
         }
-        if (action = 21)                          ;恢复鼠标位置
+        if (action = 21)                          ;Restore mouse position
         {
             MouseMove, %savedMousePosionX%, %savedMousePosionY%
         }
-        if (action = 22)                          ;遍历背包
+        if (action = 22)                          ;Loop backpack
         {
             bagArray := StrSplit(content, ",", ,8)
             d1 := bagArray[1]
@@ -7122,7 +7122,7 @@ RunUserMarco2:
             LoopBagAction(d1, d2, d3, d4, d5, d6, d7, d8)
         }
     }
-    ;仅当循环执行宏时有效，单次运行的宏将不运行，将左/右键按下时，此计数器将会置为1
+    ;Only effective when loop execute macro, single run macro will not run, when left/right button hold, this counter will be set to 1
     marcoTimerCount := marcoTimerCount + 1
     marcoAccessKey := ""
     return
@@ -7167,20 +7167,20 @@ RunUserMarco3:
             break
         action := actionArray3[i][1]
         content := actionArray3[i][2]
-        if (action = 1)                           ;按键
+        if (action = 1)                           ;Key
             ;send {%content%}  
             Send {%content%}
-        if (action = 2)                           ;按下  
+        if (action = 2)                           ;Hold  
         {
             ;send {%content% down}
             Send {%content% down}
         }
-        if (action = 3)                           ;松开
+        if (action = 3)                           ;Release
         {
             ;send {%content% up}
             Send {%content% up}
         }
-        if (action = 4)                           ;等待 最大不超过20秒 将大于1秒的等待时间拆分为0.1秒的单位，以避免后台等待太久
+        if (action = 4)                           ;Wait max not exceed 20 seconds Split wait time >1 second to 0.1 second units, to avoid background wait too long
         {
             Sleep %content% 
             /*
@@ -7200,44 +7200,44 @@ RunUserMarco3:
                 Sleep %content% 
                 */
         }
-        if (action = 5)                           ;发送文本
+        if (action = 5)                           ;Send text
         {
             ;send {Text} %content% 
             sendinput, %content%  
         }
-        if (action = 6)                           ;自定义语句
+        if (action = 6)                           ;Custom statement
         {
             ahkExec(content)
         }
-        if (action = 7)                           ;暂停宏
+        if (action = 7)                           ;Pause macro
         {
             EndFunc()
         }
-        if (action = 8)                           ;关闭宏
+        if (action = 8)                           ;Close macro
         {
             boss_Enable=0
         }
-        if (action = 9)                           ;屏幕显示信息
+        if (action = 9)                           ;Screen show info
         {
             DisplayInfo(content)
         }
-        if (action = 10)                          ;关闭屏幕显示信息
+        if (action = 10)                          ;Close screen show info
         {
             DisplayInfoClose()
         }
-        if (action = 11)                          ;占位
+        if (action = 11)                          ;Placeholder
         {
         }
-        if (action = 12)                          ;更换技能
+        if (action = 12)                          ;Change skill
         {
             ChangeSkill(content)
         }
-        if (action = 13)                          ;仅第一次运行的语句，循环执行时不再执行
+        if (action = 13)                          ;Only first run statement, loop execute no longer execute
         {
             if (marcoTimerCount = 1)
                 ahkExec(content)
         }
-        if (action = 14)                          ;连按技能
+        if (action = 14)                          ;Continuous skill
         {
             ;if (content = "1")
             switch content
@@ -7258,7 +7258,7 @@ RunUserMarco3:
                     setTimer, LabelMouseL, %BDelayMouseL% 
             }
         }
-        if (action = 15)                          ;停止连按技能
+        if (action = 15)                          ;Stop continuous skill
         {
             switch content
             {
@@ -7278,7 +7278,7 @@ RunUserMarco3:
                     setTimer, LabelMouseL, off
             }
         }
-        if (action = 16)                          ;发送多次按键
+        if (action = 16)                          ;Send multiple keys
         {
             keyArray := StrSplit(content, ",", ,3)
             v1 := keyArray[1]
@@ -7286,7 +7286,7 @@ RunUserMarco3:
             v3 := keyArray[3]
             SendMultiKey(v1, v2, v3)
         }
-        if (action = 17)                          ;鼠标转圈，参数1-角度，参数2-比例, 参数3-时间间隔，参数4-要发送的按键
+        if (action = 17)                          ;Mouse circle, parameter1-Angle, parameter2-Ratio, parameter3-Time interval, parameter4-Key to send
         {
             directionArray := StrSplit(content, ",", ,5)
             d1 := directionArray[1]
@@ -7296,14 +7296,14 @@ RunUserMarco3:
             d5 := directionArray[5]
             CircleMouse(d1, d2, d3, d4, d5)
         }
-        if (action = 18)                          ;鼠标移动，参数1-X轴比例，参数2-Y轴比例，参数3- 1比例值;2像素值
+        if (action = 18)                          ;Mouse move, parameter1-X axis ratio, parameter2-Y axis ratio, parameter3- 1Ratio value;2Pixel value
         {
             pointArray := StrSplit(content, ",", ,2)
             d1 := pointArray[1]
             d2 := pointArray[2]
             MoveYourMouse(d1, d2, 1)
         }
-        if (action = 19)                          ;随机按键
+        if (action = 19)                          ;Random key
         {
             randamKeyArray := StrSplit(content, ",")  
             arrayLength := randamKeyArray.MaxIndex()
@@ -7311,15 +7311,15 @@ RunUserMarco3:
             keyFinal := randamKeyArray[randomNumber]
             Send {%keyFinal%}
         }
-        if (action = 20)                          ;保存鼠标位置
+        if (action = 20)                          ;Save mouse position
         {
             MouseGetPos, savedMousePosionX, savedMousePosionY
         }
-        if (action = 21)                          ;恢复鼠标位置
+        if (action = 21)                          ;Restore mouse position
         {
             MouseMove, %savedMousePosionX%, %savedMousePosionY%
         }
-        if (action = 22)                          ;遍历背包
+        if (action = 22)                          ;Loop backpack
         {
             bagArray := StrSplit(content, ",", ,8)
             d1 := bagArray[1]
@@ -7333,7 +7333,7 @@ RunUserMarco3:
             LoopBagAction(d1, d2, d3, d4, d5, d6, d7, d8)
         }
     }
-    ;仅当循环执行宏时有效，单次运行的宏将不运行，将左/右键按下时，此计数器将会置为1
+    ;Only effective when loop execute macro, single run macro will not run, when left/right button hold, this counter will be set to 1
     marcoTimerCount := marcoTimerCount + 1
     marcoAccessKey := ""
     return
@@ -7378,20 +7378,20 @@ RunUserMarco4:
             break
         action := actionArray4[i][1]
         content := actionArray4[i][2]
-        if (action = 1)                           ;按键
+        if (action = 1)                           ;Key
             ;send {%content%}  
             Send {%content%}
-        if (action = 2)                           ;按下  
+        if (action = 2)                           ;Hold  
         {
             ;send {%content% down}
             Send {%content% down}
         }
-        if (action = 3)                           ;松开
+        if (action = 3)                           ;Release
         {
             ;send {%content% up}
             Send {%content% up}
         }
-        if (action = 4)                           ;等待 最大不超过20秒 将大于1秒的等待时间拆分为0.1秒的单位，以避免后台等待太久
+        if (action = 4)                           ;Wait max not exceed 20 seconds Split wait time >1 second to 0.1 second units, to avoid background wait too long
         {
             Sleep %content% 
             /*
@@ -7411,44 +7411,44 @@ RunUserMarco4:
                 Sleep %content% 
                 */
         }
-        if (action = 5)                           ;发送文本
+        if (action = 5)                           ;Send text
         {
             ;send {Text} %content% 
             sendinput, %content% 
         }
-        if (action = 6)                           ;自定义语句
+        if (action = 6)                           ;Custom statement
         {
             ahkExec(content)
         }
-        if (action = 7)                           ;暂停宏
+        if (action = 7)                           ;Pause macro
         {
             EndFunc()
         }
-        if (action = 8)                           ;关闭宏
+        if (action = 8)                           ;Close macro
         {
             boss_Enable=0
         }
-        if (action = 9)                           ;屏幕显示信息
+        if (action = 9)                           ;Screen show info
         {
             DisplayInfo(content)
         }
-        if (action = 10)                          ;关闭屏幕显示信息
+        if (action = 10)                          ;Close screen show info
         {
             DisplayInfoClose()
         }
-        if (action = 11)                          ;占位
+        if (action = 11)                          ;Placeholder
         {
         }
-        if (action = 12)                          ;更换技能
+        if (action = 12)                          ;Change skill
         {
             ChangeSkill(content)
         }
-        if (action = 13)                          ;仅第一次运行的语句，循环执行时不再执行
+        if (action = 13)                          ;Only first run statement, loop execute no longer execute
         {
             if (marcoTimerCount = 1)
                 ahkExec(content)
         }
-        if (action = 14)                          ;连按技能
+        if (action = 14)                          ;Continuous skill
         {
             ;if (content = "1")
             switch content
@@ -7469,7 +7469,7 @@ RunUserMarco4:
                     setTimer, LabelMouseL, %BDelayMouseL% 
             }
         }
-        if (action = 15)                          ;停止连按技能
+        if (action = 15)                          ;Stop continuous skill
         {
             switch content
             {
@@ -7489,7 +7489,7 @@ RunUserMarco4:
                     setTimer, LabelMouseL, off
             }
         }
-        if (action = 16)                          ;发送多次按键
+        if (action = 16)                          ;Send multiple keys
         {
             keyArray := StrSplit(content, ",", ,3)
             v1 := keyArray[1]
@@ -7497,7 +7497,7 @@ RunUserMarco4:
             v3 := keyArray[3]
             SendMultiKey(v1, v2, v3)
         }
-        if (action = 17)                          ;鼠标转圈，参数1-角度，参数2-比例, 参数3-时间间隔，参数4-要发送的按键
+        if (action = 17)                          ;Mouse circle, parameter1-Angle, parameter2-Ratio, parameter3-Time interval, parameter4-Key to send
         {
             directionArray := StrSplit(content, ",", ,5)
             d1 := directionArray[1]
@@ -7507,14 +7507,14 @@ RunUserMarco4:
             d5 := directionArray[5]
             CircleMouse(d1, d2, d3, d4, d5)
         }
-        if (action = 18)                          ;鼠标移动，参数1-X轴比例，参数2-Y轴比例，参数3- 1比例值;2像素值
+        if (action = 18)                          ;Mouse move, parameter1-X axis ratio, parameter2-Y axis ratio, parameter3- 1Ratio value;2Pixel value
         {
             pointArray := StrSplit(content, ",", ,2)
             d1 := pointArray[1]
             d2 := pointArray[2]
             MoveYourMouse(d1, d2, 1)
         }
-        if (action = 19)                          ;随机按键
+        if (action = 19)                          ;Random key
         {
             randamKeyArray := StrSplit(content, ",")  
             arrayLength := randamKeyArray.MaxIndex()
@@ -7522,15 +7522,15 @@ RunUserMarco4:
             keyFinal := randamKeyArray[randomNumber]
             Send {%keyFinal%}
         }
-        if (action = 20)                          ;保存鼠标位置
+        if (action = 20)                          ;Save mouse position
         {
             MouseGetPos, savedMousePosionX, savedMousePosionY
         }
-        if (action = 21)                          ;恢复鼠标位置
+        if (action = 21)                          ;Restore mouse position
         {
             MouseMove, %savedMousePosionX%, %savedMousePosionY%
         }
-        if (action = 22)                          ;遍历背包
+        if (action = 22)                          ;Loop backpack
         {
             bagArray := StrSplit(content, ",", ,8)
             d1 := bagArray[1]
@@ -7544,7 +7544,7 @@ RunUserMarco4:
             LoopBagAction(d1, d2, d3, d4, d5, d6, d7, d8)
         }
     }
-    ;仅当循环执行宏时有效，单次运行的宏将不运行，将左/右键按下时，此计数器将会置为1
+    ;Only effective when loop execute macro, single run macro will not run, when left/right button hold, this counter will be set to 1
     marcoTimerCount := marcoTimerCount + 1
     marcoAccessKey := ""
     return
@@ -7589,20 +7589,20 @@ RunUserMarco5:
             break
         action := actionArray5[i][1]
         content := actionArray5[i][2]
-        if (action = 1)                           ;按键
+        if (action = 1)                           ;Key
             ;send {%content%}  
             Send {%content%}
-        if (action = 2)                           ;按下  
+        if (action = 2)                           ;Hold  
         {
             ;send {%content% down}
             Send {%content% down}
         }
-        if (action = 3)                           ;松开
+        if (action = 3)                           ;Release
         {
             ;send {%content% up}
             Send {%content% up}
         }
-        if (action = 4)                           ;等待 最大不超过20秒 将大于1秒的等待时间拆分为0.1秒的单位，以避免后台等待太久
+        if (action = 4)                           ;Wait max not exceed 20 seconds Split wait time >1 second to 0.1 second units, to avoid background wait too long
         {
             Sleep %content% 
             /*
@@ -7622,44 +7622,44 @@ RunUserMarco5:
                 Sleep %content% 
             */
         }
-        if (action = 5)                           ;发送文本
+        if (action = 5)                           ;Send text
         {
             ;send {Text} %content% 
             sendinput, %content% 
         }
-        if (action = 6)                           ;自定义语句
+        if (action = 6)                           ;Custom statement
         {
             ahkExec(content)
         }
-        if (action = 7)                           ;暂停宏
+        if (action = 7)                           ;Pause macro
         {
             EndFunc()
         }
-        if (action = 8)                           ;关闭宏
+        if (action = 8)                           ;Close macro
         {
             boss_Enable=0
         }
-        if (action = 9)                           ;屏幕显示信息
+        if (action = 9)                           ;Screen show info
         {
             DisplayInfo(content)
         }
-        if (action = 10)                          ;关闭屏幕显示信息
+        if (action = 10)                          ;Close screen show info
         {
             DisplayInfoClose()
         }
-        if (action = 11)                          ;占位
+        if (action = 11)                          ;Placeholder
         {
         }
-        if (action = 12)                          ;更换技能
+        if (action = 12)                          ;Change skill
         {
             ChangeSkill(content)
         }
-        if (action = 13)                          ;仅第一次运行的语句，循环执行时不再执行
+        if (action = 13)                          ;Only first run statement, loop execute no longer execute
         {
             if (marcoTimerCount = 1)
                 ahkExec(content)
         }
-        if (action = 14)                          ;连按技能
+        if (action = 14)                          ;Continuous skill
         {
             ;if (content = "1")
             switch content
@@ -7680,7 +7680,7 @@ RunUserMarco5:
                     setTimer, LabelMouseL, %BDelayMouseL% 
             }
         }
-        if (action = 15)                          ;停止连按技能
+        if (action = 15)                          ;Stop continuous skill
         {
             switch content
             {
@@ -7700,7 +7700,7 @@ RunUserMarco5:
                     setTimer, LabelMouseL, off
             }
         }
-        if (action = 16)                          ;发送多次按键
+        if (action = 16)                          ;Send multiple keys
         {
             keyArray := StrSplit(content, ",", ,3)
             v1 := keyArray[1]
@@ -7708,7 +7708,7 @@ RunUserMarco5:
             v3 := keyArray[3]
             SendMultiKey(v1, v2, v3)
         }
-        if (action = 17)                          ;鼠标转圈，参数1-角度，参数2-比例, 参数3-时间间隔，参数4-要发送的按键
+        if (action = 17)                          ;Mouse circle, parameter1-Angle, parameter2-Ratio, parameter3-Time interval, parameter4-Key to send
         {
             directionArray := StrSplit(content, ",", ,5)
             d1 := directionArray[1]
@@ -7718,14 +7718,14 @@ RunUserMarco5:
             d5 := directionArray[5]
             CircleMouse(d1, d2, d3, d4, d5)
         }
-        if (action = 18)                          ;鼠标移动，参数1-X轴比例，参数2-Y轴比例，参数3- 1比例值;2像素值
+        if (action = 18)                          ;Mouse move, parameter1-X axis ratio, parameter2-Y axis ratio, parameter3- 1Ratio value;2Pixel value
         {
             pointArray := StrSplit(content, ",", ,2)
             d1 := pointArray[1]
             d2 := pointArray[2]
             MoveYourMouse(d1, d2, 1)
         }
-        if (action = 19)                          ;随机按键
+        if (action = 19)                          ;Random key
         {
             randamKeyArray := StrSplit(content, ",")  
             arrayLength := randamKeyArray.MaxIndex()
@@ -7733,15 +7733,15 @@ RunUserMarco5:
             keyFinal := randamKeyArray[randomNumber]
             Send {%keyFinal%}
         }
-        if (action = 20)                          ;保存鼠标位置
+        if (action = 20)                          ;Save mouse position
         {
             MouseGetPos, savedMousePosionX, savedMousePosionY
         }
-        if (action = 21)                          ;恢复鼠标位置
+        if (action = 21)                          ;Restore mouse position
         {
             MouseMove, %savedMousePosionX%, %savedMousePosionY%
         }
-        if (action = 22)                          ;遍历背包
+        if (action = 22)                          ;Loop backpack
         {
             bagArray := StrSplit(content, ",", ,8)
             d1 := bagArray[1]
@@ -7755,13 +7755,13 @@ RunUserMarco5:
             LoopBagAction(d1, d2, d3, d4, d5, d6, d7, d8)
         }
     }
-    ;仅当循环执行宏时有效，单次运行的宏将不运行，将左/右键按下时，此计数器将会置为1
+    ;Only effective when loop execute macro, single run macro will not run, when left/right button hold, this counter will be set to 1
     marcoTimerCount := marcoTimerCount + 1
     marcoAccessKey := ""
     return
 }
 
-RunUserMarcoX(cur_marco_num)  ;动态调用自定义宏
+RunUserMarcoX(cur_marco_num)  ;Dynamic call custom macro
 {
     Global 
     IfWinNotActive,%BServer%
@@ -7801,17 +7801,17 @@ RunUserMarcoX(cur_marco_num)  ;动态调用自定义宏
             break
         action := actionArray%cur_marco_num%[i][1]
         content := actionArray%cur_marco_num%[i][2]
-        if (action = 1)                           ;按键
+        if (action = 1)                           ;Key
             Send {%content%}
-        if (action = 2)                           ;按下  
+        if (action = 2)                           ;Hold  
         {
             Send {%content% down}
         }
-        if (action = 3)                           ;松开
+        if (action = 3)                           ;Release
         {
             Send {%content% up}
         }
-        if (action = 4)                           ;等待 最大不超过20秒 将大于1秒的等待时间拆分为0.1秒的单位，以避免后台等待太久
+        if (action = 4)                           ;Wait max not exceed 20 seconds Split wait time >1 second to 0.1 second units, to avoid background wait too long
         {
             Sleep %content% 
             /*
@@ -7831,43 +7831,43 @@ RunUserMarcoX(cur_marco_num)  ;动态调用自定义宏
                 Sleep %content% 
             */
         }
-        if (action = 5)                           ;发送文本
+        if (action = 5)                           ;Send text
         {
             sendinput, %content% 
         }
-        if (action = 6)                           ;自定义语句
+        if (action = 6)                           ;Custom statement
         {
             ahkExec(content)
         }
-        if (action = 7)                           ;暂停宏
+        if (action = 7)                           ;Pause macro
         {
             EndFunc()
         }
-        if (action = 8)                           ;关闭宏
+        if (action = 8)                           ;Close macro
         {
             boss_Enable=0
         }
-        if (action = 9)                           ;屏幕显示信息
+        if (action = 9)                           ;Screen show info
         {
             DisplayInfo(content)
         }
-        if (action = 10)                          ;关闭屏幕显示信息
+        if (action = 10)                          ;Close screen show info
         {
             DisplayInfoClose()
         }
-        if (action = 11)                          ;占位
+        if (action = 11)                          ;Placeholder
         {
         }
-        if (action = 12)                          ;更换技能
+        if (action = 12)                          ;Change skill
         {
             ChangeSkill(content)
         }
-        if (action = 13)                          ;仅第一次运行的语句，循环执行时不再执行
+        if (action = 13)                          ;Only first run statement, loop execute no longer execute
         {
             if (marcoTimerCount = 1)
                 ahkExec(content)
         }
-        if (action = 14)                          ;连按技能
+        if (action = 14)                          ;Continuous skill
         {
             switch content
             {
@@ -7887,7 +7887,7 @@ RunUserMarcoX(cur_marco_num)  ;动态调用自定义宏
                     setTimer, LabelMouseL, %BDelayMouseL% 
             }
         }
-        if (action = 15)                          ;停止连按技能
+        if (action = 15)                          ;Stop continuous skill
         {
             switch content
             {
@@ -7907,7 +7907,7 @@ RunUserMarcoX(cur_marco_num)  ;动态调用自定义宏
                     setTimer, LabelMouseL, off
             }
         }
-        if (action = 16)                          ;发送多次按键
+        if (action = 16)                          ;Send multiple keys
         {
             keyArray := StrSplit(content, ",", ,3)
             v1 := keyArray[1]
@@ -7915,7 +7915,7 @@ RunUserMarcoX(cur_marco_num)  ;动态调用自定义宏
             v3 := keyArray[3]
             SendMultiKey(v1, v2, v3)
         }
-        if (action = 17)                          ;鼠标转圈，参数1-角度，参数2-比例, 参数3-时间间隔，参数4-要发送的按键
+        if (action = 17)                          ;Mouse circle, parameter1-Angle, parameter2-Ratio, parameter3-Time interval, parameter4-Key to send
         {
             directionArray := StrSplit(content, ",", ,5)
             d1 := directionArray[1]
@@ -7925,14 +7925,14 @@ RunUserMarcoX(cur_marco_num)  ;动态调用自定义宏
             d5 := directionArray[5]
             CircleMouse(d1, d2, d3, d4, d5)
         }
-        if (action = 18)                          ;鼠标移动，参数1-X轴比例，参数2-Y轴比例，参数3- 1比例值;2像素值
+        if (action = 18)                          ;Mouse move, parameter1-X axis ratio, parameter2-Y axis ratio, parameter3- 1Ratio value;2Pixel value
         {
             pointArray := StrSplit(content, ",", ,2)
             d1 := pointArray[1]
             d2 := pointArray[2]
             MoveYourMouse(d1, d2, 1)
         }
-        if (action = 19)                          ;随机按键
+        if (action = 19)                          ;Random key
         {
             randamKeyArray := StrSplit(content, ",")  
             arrayLength := randamKeyArray.MaxIndex()
@@ -7940,15 +7940,15 @@ RunUserMarcoX(cur_marco_num)  ;动态调用自定义宏
             keyFinal := randamKeyArray[randomNumber]
             Send {%keyFinal%}
         }
-        if (action = 20)                          ;保存鼠标位置
+        if (action = 20)                          ;Save mouse position
         {
             MouseGetPos, savedMousePosionX, savedMousePosionY
         }
-        if (action = 21)                          ;恢复鼠标位置
+        if (action = 21)                          ;Restore mouse position
         {
             MouseMove, %savedMousePosionX%, %savedMousePosionY%
         }
-        if (action = 22)                          ;遍历背包
+        if (action = 22)                          ;Loop backpack
         {
             bagArray := StrSplit(content, ",", ,8)
             d1 := bagArray[1]
@@ -7962,7 +7962,7 @@ RunUserMarcoX(cur_marco_num)  ;动态调用自定义宏
             LoopBagAction(d1, d2, d3, d4, d5, d6, d7, d8)
         }
     }
-    ;仅当循环执行宏时有效，单次运行的宏将不运行，将左/右键按下时，此计数器将会置为1
+    ;Only effective when loop execute macro, single run macro will not run, when left/right button hold, this counter will be set to 1
     marcoTimerCount := marcoTimerCount + 1
     marcoAccessKey := ""
     return
@@ -7984,7 +7984,7 @@ ChangeSkill(content_st)
     ;ControlSend ,,S,%BServer%
 }
 
-GetSkillPos(SwitchValue, mode) ;mode=1为技能面板, mode=2为技能栏
+GetSkillPos(SwitchValue, mode) ;mode=1 for skill panel, mode=2 for skill bar
 {
     WinGetPos, X, Y, current_Width, current_Height, %BServer%
     sysget titlebar_height, 4, %BServer%
@@ -8066,22 +8066,22 @@ RunUserMarco:
         action := actionArray1[i][1]
         content := actionArray1[i][2]
         ;msgbox, %action% . %content%
-        if (action = 1)                           ;按键
+        if (action = 1)                           ;Key
             ;send {%content%}  
             Send {%content%}
-        if (action = 2)                           ;按下  
+        if (action = 2)                           ;Hold  
         {
             ;send {%content% down}
             Send {%content% down}
         }
-        if (action = 3)                           ;松开
+        if (action = 3)                           ;Release
         {
             ;send {%content% up}
             Send {%content% up}
         }
-        if (action = 4)                           ;等待
+        if (action = 4)                           ;Wait
             Sleep %content% 
-        if (action = 5)                           ;自定义语句
+        if (action = 5)                           ;Custom statement
         {
 
         }
@@ -8231,7 +8231,7 @@ StartForceMove:
 }
 EndForceMove:
 {    
-    ;;;;;恢复状态;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;Restore status;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     channel_enable := channel_status
     channel2_enable := channel2_status
     BAutoL_enable := BAutoL_status
@@ -8277,7 +8277,7 @@ EndForceMove:
     {
         SetTimer, LabelMouseL, %BDelayMouseL%
     }
-    ;;;;;恢复状态;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;Restore status;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         
     return
 }
@@ -8317,7 +8317,7 @@ StartPickUp:
 }
 EndPickUp:
 {
-    ;;;;;恢复引导状态;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;Restore channel status;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     channel_enable := channel_status
     channel2_enable := channel2_status
     BAutoL_enable := BAutoL_status
@@ -8342,7 +8342,7 @@ EndPickUp:
             if (BAutoL_enable = 1)
                 SetTimer, MouseLButton, %BDelayL%
         }
-        else if (BDelayL2 != 0) ;BDelayL2 != 0时 BAutoL必然为1
+        else if (BDelayL2 != 0) ;BDelayL2 != 0 then BAutoL must be 1
         {
             if (BAutoL_enable = 1)
                 SetTimer, MouseLButton, %BDelayL%
@@ -8360,7 +8360,7 @@ EndPickUp:
                 SetTimer, MouseRButton, %BDelayR%
             }
         }
-        else if (BDelayR2 != 0) ;BDelayL2 != 0时 BAutoL必然为1
+        else if (BDelayR2 != 0) ;BDelayL2 != 0 then BAutoL must be 1
         {
             if (BAutoR_enable = 1)
             {
@@ -8384,7 +8384,7 @@ EndPickUp:
                 SetTimer, Label1, %BDelay1%
             }
         }
-        else if (BDelay12 != 0) ;BDelayL2 != 0时 BAutoL必然为1
+        else if (BDelay12 != 0) ;BDelayL2 != 0 then BAutoL must be 1
         {
             if (BAuto1_enable = 1)
             {
@@ -8408,7 +8408,7 @@ EndPickUp:
                 SetTimer, Label2, %BDelay2%
             }
         }
-        else if (BDelay22 != 0) ;BDelayL2 != 0时 BAutoL必然为1
+        else if (BDelay22 != 0) ;BDelayL2 != 0 then BAutoL must be 1
         {
             if (BAuto2_enable = 1)
             {
@@ -8432,7 +8432,7 @@ EndPickUp:
                 SetTimer, Label3, %BDelay3%
             }
         }
-        else if (BDelay32 != 0) ;BDelayL2 != 0时 BAutoL必然为1
+        else if (BDelay32 != 0) ;BDelayL2 != 0 then BAutoL must be 1
         {
             if (BAuto3_enable = 1)
             {
@@ -8456,7 +8456,7 @@ EndPickUp:
                 SetTimer, Label4, %BDelay4%
             }
         }
-        else if (BDelay42 != 0) ;BDelayL2 != 0时 BAutoL必然为1
+        else if (BDelay42 != 0) ;BDelayL2 != 0 then BAutoL must be 1
         {
             if (BAuto4_enable = 1)
             {
@@ -8480,7 +8480,7 @@ EndPickUp:
                 SetTimer, LabelMouseL, %BDelayMouseL%
             }
         }
-        else if (BDelayMouseL2 != 0) ;BDelayL2 != 0时 BAutoL必然为1
+        else if (BDelayMouseL2 != 0) ;BDelayL2 != 0 then BAutoL must be 1
         {
             if (BAutoMouseL_Enable = 1)
             {
@@ -8681,7 +8681,7 @@ return
 GetModeSkillLabel(SwitchValue, chooseMarcoLabelNum)
 {
     labelName := ""
-    if (chooseMarcoLabelNum = 1 or chooseMarcoLabelNum = 2) ;左键和右键
+    if (chooseMarcoLabelNum = 1 or chooseMarcoLabelNum = 2) ;Left and right button
     {
         if (SwitchValue = 3)
             labelName := "Label1"
@@ -8757,7 +8757,7 @@ ResumeModeSkillLabel(labelName)
 
 GetSkillBuffStatus(buttonID)
 {
-    ;技能按左至右顺序为1-6，5为左键
+    ;Skill left to right order 1-6, 5 is left button
     global BServer
     WinGetPos, X, Y, current_Width, current_Height, %BServer%
     sysget titlebar_height, 4, %BServer%
@@ -8842,17 +8842,17 @@ Add_action1:
     if (actionArrayIndex%marcoNum% >= actionArrayCount%marcoNum%)
     {
         MsgBox %marcoNum%
-        MsgBox % "最大只能插入" actionArrayCount%marcoNum% "个动作"
+        MsgBox % "Max can only insert" actionArrayCount%marcoNum% "actions"
         return
     }
     actionArrayIndex%marcoNum% := actionArrayIndex%marcoNum%+1
     yValue := 60 + ((actionArrayIndex%marcoNum% - 1) * 20)
 
     t1 := actionArrayIndex%marcoNum%
-    Gui, UserMarcoSet%marcoNum%:Add, CheckBox, x25 y%yValue% h20 vBActionArrayIndex%marcoNum%%t1%, 步骤%t1%:
+    Gui, UserMarcoSet%marcoNum%:Add, CheckBox, x25 y%yValue% h20 vBActionArrayIndex%marcoNum%%t1%, Step%t1%:
     Gui, UserMarcoSet%marcoNum%:Add, DropDownList, x90 y%yValue% w100 AltSubmit choose1 vBActionArrayItem%marcoNum%%t1%, %actionItem% ;
     Gui, UserMarcoSet%marcoNum%:Add, Edit, x200 y%yValue% w250 h20 Multi vBActionArrayContent%marcoNum%%t1%,  ;
-    actionArrayStatus%marcoNum%[actionArrayIndex%marcoNum%] := 1 ;自定义宏数组
+    actionArrayStatus%marcoNum%[actionArrayIndex%marcoNum%] := 1 ;Custom macro array
 
     return
 }
@@ -8877,17 +8877,17 @@ Del_action1:
             actionArrayStatus%marcoNum%[i] := 0
         }
     }
-    MsgBox, 删除成功
+    MsgBox, Delete success
     return
 }
 
 Destroy_action1:
 {
-    MsgBox, 清除成功，重启程序后生效
+    MsgBox, Clear success, restart program to take effect
     return
 }
 
-;;;;;;;;;D2R函数;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;D2R Functions;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 D2RSetWeaponHand(hand_num, times, interval) 
 {
     global BServer, boss_Enable, BDispMode
@@ -8901,8 +8901,8 @@ D2RSetWeaponHand(hand_num, times, interval)
     if (BDispMode = 2)
         titlebar_height := 0
     
-    ;F1技能左上： 0.3086 0.8389
-    ;F1技能右下： 0.3316 0.8798
+    ;F1 skill top left： 0.3086 0.8389
+    ;F1 skill bottom right： 0.3316 0.8798
 
     cur_handnum := 0
     check_pos1x := current_Width * 0.3086
@@ -8951,18 +8951,18 @@ D2RSetWeaponHand(hand_num, times, interval)
 
     Return
 }
-;;;;;;;;;D2R函数end;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;D2R Functions end;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;通用函数;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;Common Functions;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;#region 
-; 函数：获取所有窗口并按进程创建时间排序------------------------------------------------------------
+; Function: Get all windows and sort by process creation time------------------------------------------------------------
 GetDiabloWindowsByCreationTime(win_name)
 {
     ;WinGet, hwndList, List, Diablo II: Resurrected
     WinGet, hwndList, List, %win_name%
     windows := []
 
-    ; 获取每个窗口的进程创建时间
+    ; Get each window process creation time
     Loop, %hwndList%
     {
         hwnd := hwndList%A_Index%
@@ -8971,13 +8971,13 @@ GetDiabloWindowsByCreationTime(win_name)
         if !hProcess
             continue
 
-        ; 获取进程创建时间戳
+        ; Get process creation timestamp
         DllCall("GetProcessTimes", "Ptr", hProcess, "Int64*", creationTime, "Int64*", 0, "Int64*", 0, "Int64*", 0)
         DllCall("CloseHandle", "Ptr", hProcess)
         windows.Push({hwnd: hwnd, time: creationTime})
     }
 
-    ; 按创建时间排序（从小到大）
+    ; Sort by creation time (small to large)
     sorted := []
     for i, obj in windows
     {
@@ -8995,27 +8995,27 @@ GetDiabloWindowsByCreationTime(win_name)
             sorted.Push(obj)
     }
 
-    ; 提取排序后的句柄
+    ; Extract sorted handles
     result := []
     for i, obj in sorted
         result.Push(obj.hwnd)
 
     return result
 }
-; 函数：获取所有窗口并按进程创建时间排序------------------------------------------------------------
+; Function: Get all windows and sort by process creation time------------------------------------------------------------
 
-;多次发送按键次数--------------------------------------------------------
+;Multiple send key count--------------------------------------------------------
 SendMultiKey(send_key, send_interval, send_times) 
 {   
-    ; 每次发送之间的间隔时间（毫秒）
+    ; Interval between each send (milliseconds)
     interval := send_interval  
-    ; 循环次数
+    ; Loop count
     times := send_times
-    ; 循环次数
+    ; Loop count
     key := send_key
     
-    ; 在宏未启动时，也可能用到多次按键，故只判断是否激活窗口
-    ; 发送指定的次数，每次之间有指定的间隔
+    ; When macro not started, multiple keys may still be used, so only judge if window active
+    ; Send specified count, each with specified interval
     global BServer
     Loop, %times% {
         Send, {%key%}
@@ -9027,18 +9027,18 @@ SendMultiKey(send_key, send_interval, send_times)
     }
 }
 ;----------------------------------------------------------------------
-;鼠标转圈--------------------------------------------------------
-CircleMouse(d_angle, d_ratio, d_time, d_key, d_type) ;参数1-角度，参数2-比例/像素, 参数3-时间间隔，参数4-发送按键，参数5- 1原地转圈，2走动转圈
+;Mouse circle--------------------------------------------------------
+CircleMouse(d_angle, d_ratio, d_time, d_key, d_type) ;Parameter1-Angle, Parameter2-Ratio/pixel, Parameter3-Time interval, Parameter4-Send key, Parameter5- 1In place circle, 2Moving circle
 {   
-    ; 角度
+    ; Angle
     angle := d_angle
-    ; 比例/像素 即半径
+    ; Ratio/pixel i.e. radius
     ratio := d_ratio
-    ; 时间间隔（毫秒）
+    ; Time interval (milliseconds)
     interval := d_time  
-    ; 按键
+    ; Key
     key := d_key  
-    ; 按键
+    ; Key
     type := d_type  
 
     global BServer, boss_Enable, BDispMode
@@ -9048,13 +9048,13 @@ CircleMouse(d_angle, d_ratio, d_time, d_key, d_type) ;参数1-角度，参数2-�
     {
         titlebar_height := 0
     }
-    ;中心位置
+    ;Center position
     center_x := current_Width*1920/3840
     center_y := (current_Height - titlebar_height)*1080/2160+titlebar_height
 
-    ; 在宏未启动时，不支持此动作，故判断窗口激活以及启动状态
-    ; 发送指定的次数，每次之间有指定的间隔
-    MouseMove, center_x, center_y, 0 ;初始移动到人物中心正右方
+    ; When macro not started, not support this action, so judge window active and start status
+    ; Send specified count, each with specified interval
+    MouseMove, center_x, center_y, 0 ;Initial move to character center right
     Sleep, %interval%
     t_x := 0
     t_y := 0
@@ -9087,29 +9087,29 @@ CircleMouse(d_angle, d_ratio, d_time, d_key, d_type) ;参数1-角度，参数2-�
     }
 }
 ;----------------------------------------------------------------------
-;获取窗口客户区大小--------------------------------------------------------
+;Get window client area size--------------------------------------------------------
 GetWindowWHDetail(ByRef win_width, ByRef win_height, ByRef client_width, ByRef client_height, ByRef border_Width, ByRef border_height, ByRef border_Width_fix, ByRef border_height_fix) 
 {
     global BServer
-    ; 假设窗口标题或类名为 BServer
+    ; Assume window title or class name is BServer
     WinGet, hWnd, ID, %BServer%
 
-    ; 调用 GetClientRect 获取客户区大小
-    VarSetCapacity(RECT, 16, 0) ; 创建一个 RECT 结构
+    ; Call GetClientRect to get client area size
+    VarSetCapacity(RECT, 16, 0) ; Create a RECT structure
     DllCall("GetClientRect", "Ptr", hWnd, "Ptr", &RECT)
 
-    ; 从 RECT 结构中提取宽度和高度
+    ; Extract width and height from RECT structure
     cWidth  := NumGet(RECT, 8, "Int")  ; right - left
     cHeight := NumGet(RECT, 12, "Int") ; bottom - top
 
-    ; 获取窗口的总大小（包括标题栏和边框）
+    ; Get window total size (including title bar and border)
     WinGetPos, winX, winY, winWidth, winHeight, ahk_id %hWnd%
 
-    ; 获取边框高度和宽度（使用 GetSystemMetrics）
-    borderWidth  := DllCall("GetSystemMetrics", "Int", 32) ; SM_CXSIZEFRAME（可调整边框宽度）
-    borderHeight := DllCall("GetSystemMetrics", "Int", 33) ; SM_CYSIZEFRAME（可调整边框高度）
+    ; Get border height and width (use GetSystemMetrics)
+    borderWidth  := DllCall("GetSystemMetrics", "Int", 32) ; SM_CXSIZEFRAME (adjustable border width)
+    borderHeight := DllCall("GetSystemMetrics", "Int", 33) ; SM_CYSIZEFRAME (adjustable border height)
 
-    ; 输出各值
+    ; Output each value
     win_width := winWidth ;2586
     win_height := winHeight ;1500
     client_width := cWidth ;2560
@@ -9120,22 +9120,22 @@ GetWindowWHDetail(ByRef win_width, ByRef win_height, ByRef client_width, ByRef c
     border_height_fix := winHeight-cHeight-borderHeight ;49
 
     /*
-    ; 调用 GetWindowInfo 获取窗口信息
-    VarSetCapacity(WINDOWINFO, 60, 0) ; WINDOWINFO 结构大小为 60 字节
-    NumPut(60, WINDOWINFO, 0, "UInt") ; 设置 cbSize
+    ; Call GetWindowInfo to get window info
+    VarSetCapacity(WINDOWINFO, 60, 0) ; WINDOWINFO structure size 60 bytes
+    NumPut(60, WINDOWINFO, 0, "UInt") ; Set cbSize
     DllCall("GetWindowInfo", "Ptr", hWnd, "Ptr", &WINDOWINFO)
-    ; 提取窗口的边框宽度
+    ; Extract window border width
     cxWindowBorders := NumGet(WINDOWINFO, 48, "Int") ; cxWindowBorders
-    MsgBox, 窗口边框宽度: %cxWindowBorders%
+    MsgBox, Window border width: %cxWindowBorders%
     */
 }
 
 CheckColorExsit(ByRef result, ByRef destx, ByRef desty, pos1x, pos1y, pos2x, pos2y, color_rgb)
 {
     /*
-    坐标值都采用相对x,y轴的比例值；
-    颜色值为AHK的rgb格式；
-    result为0时代表未找到指定颜色，为1时代表找到，为2时代表窗口未激活未进行查找；
+    All coord values use relative x,y axis ratio values；
+    Color value is AHK rgb format；
+    result=0 means not found specified color, =1 means found, =2 means window not active no search performed；
     */
     global BServer, boss_Enable, BDispMode
     IfWinNotActive,%BServer%
@@ -9171,29 +9171,29 @@ CheckColorExsit(ByRef result, ByRef destx, ByRef desty, pos1x, pos1y, pos2x, pos
     }
 }    
 
-;获取窗口客户区大小--------------------------------------------------------
+;Get window client area size--------------------------------------------------------
 GetWindowWHDetailTotal(ByRef WHInfo) 
 {
     global BServer
-    ; 假设窗口标题或类名为 BServer
+    ; Assume window title or class name is BServer
     WinGet, hWnd, ID, %BServer%
 
-    ; 调用 GetClientRect 获取客户区大小
-    VarSetCapacity(RECT, 16, 0) ; 创建一个 RECT 结构
+    ; Call GetClientRect to get client area size
+    VarSetCapacity(RECT, 16, 0) ; Create a RECT structure
     DllCall("GetClientRect", "Ptr", hWnd, "Ptr", &RECT)
 
-    ; 从 RECT 结构中提取宽度和高度
+    ; Extract width and height from RECT structure
     cWidth  := NumGet(RECT, 8, "Int")  ; right - left
     cHeight := NumGet(RECT, 12, "Int") ; bottom - top
 
-    ; 获取窗口的总大小（包括标题栏和边框）
+    ; Get window total size (including title bar and border)
     WinGetPos, winX, winY, winWidth, winHeight, ahk_id %hWnd%
 
-    ; 获取边框高度和宽度（使用 GetSystemMetrics）
-    borderWidth  := DllCall("GetSystemMetrics", "Int", 32) ; SM_CXSIZEFRAME（可调整边框宽度）
-    borderHeight := DllCall("GetSystemMetrics", "Int", 33) ; SM_CYSIZEFRAME（可调整边框高度）
+    ; Get border height and width (use GetSystemMetrics)
+    borderWidth  := DllCall("GetSystemMetrics", "Int", 32) ; SM_CXSIZEFRAME (adjustable border width)
+    borderHeight := DllCall("GetSystemMetrics", "Int", 33) ; SM_CYSIZEFRAME (adjustable border height)
 
-    ; 输出各值
+    ; Output each value
     win_width := winWidth ;2586
     win_height := winHeight ;1500
     client_width := cWidth ;2560
@@ -9208,11 +9208,11 @@ GetWindowWHDetailTotal(ByRef WHInfo)
 
 ;----------------------------------------------------------------------
 
-MoveYourMouse(p_x, p_y, p_type) ;参数1-X轴比例，参数2-Y轴比例, 参数3- 1比例值，2像素值
+MoveYourMouse(p_x, p_y, p_type) ;Parameter1-X axis ratio, Parameter2-Y axis ratio, Parameter3- 1Ratio value, 2Pixel value
 {   
     global BServer, boss_Enable, BDispMode
-    ; 在宏未启动时，不支持此动作，故判断窗口激活以及启动状态
-    ; 发送指定的次数，每次之间有指定的间隔
+    ; When macro not started, not support this action, so judge window active and start status
+    ; Send specified count, each with specified interval
     IfWinNotActive,%BServer%
     {
         return
@@ -9224,7 +9224,7 @@ MoveYourMouse(p_x, p_y, p_type) ;参数1-X轴比例，参数2-Y轴比例, 参数
     {
         titlebar_height := 0
     }
-    ;中心位置
+    ;Center position
     center_x := current_Width*1920/3840
     center_y := (current_Height - titlebar_height)*1080/2160+titlebar_height
 
@@ -9243,7 +9243,7 @@ MoveYourMouse(p_x, p_y, p_type) ;参数1-X轴比例，参数2-Y轴比例, 参数
     
     MouseMove, dest_x, dest_y, 0
 }
-MoveYourMouseAnyway(p_x, p_y, p_type) ;参数1-X轴比例，参数2-Y轴比例, 参数3- 1比例值，2像素值
+MoveYourMouseAnyway(p_x, p_y, p_type) ;Parameter1-X axis ratio, Parameter2-Y axis ratio, Parameter3- 1Ratio value, 2Pixel value
 {   
     WinGetPos, X, Y, current_Width, current_Height, A
     sysget titlebar_height, 4
@@ -9251,7 +9251,7 @@ MoveYourMouseAnyway(p_x, p_y, p_type) ;参数1-X轴比例，参数2-Y轴比例, 
     {
         titlebar_height := 0
     }
-    ;中心位置
+    ;Center position
     center_x := current_Width*1920/3840
     center_y := (current_Height - titlebar_height)*1080/2160+titlebar_height
 
@@ -9271,12 +9271,12 @@ MoveYourMouseAnyway(p_x, p_y, p_type) ;参数1-X轴比例，参数2-Y轴比例, 
     MouseMove, dest_x, dest_y, 0
 }
 ;----------------------------------------------------------------------
-;循环按键--------------------------------------------------------
-LoopAnyKey(p_key, p_time, p_type) ;参数1-按键，参数2-间隔，参数3- 1开始，2停止
+;Loop key--------------------------------------------------------
+LoopAnyKey(p_key, p_time, p_type) ;Parameter1-Key, Parameter2-Interval, Parameter3- 1Start, 2Stop
 {   
     global BServer, boss_Enable
-    ; 在宏未启动时，不支持此动作，故判断窗口激活以及启动状态
-    ; 发送指定的次数，每次之间有指定的间隔
+    ; When macro not started, not support this action, so judge window active and start status
+    ; Send specified count, each with specified interval
     IfWinNotActive,%BServer%
     {
         EndFunc()
@@ -9309,12 +9309,12 @@ LoopAnyKey(p_key, p_time, p_type) ;参数1-按键，参数2-间隔，参数3- 1�
 }
 ;----------------------------------------------------------------------
 
-;循环背包--------------------------------------------------------
-LoopBagAction(p_LX, p_LY, p_RX, p_RY, p_line, p_col, p_key, p_time) ;参数：左上X,左上y,右下x，右下y,行数，列数，按键, 间隔时间
+;Loop backpack--------------------------------------------------------
+LoopBagAction(p_LX, p_LY, p_RX, p_RY, p_line, p_col, p_key, p_time) ;Parameters: Top left X, top left y, bottom right x, bottom right y, row count, column count, key, interval time
 {   
     global BServer, boss_Enable
-    ; 在宏未启动时，不支持此动作，故判断窗口激活以及启动状态
-    ; 发送指定的次数，每次之间有指定的间隔
+    ; When macro not started, not support this action, so judge window active and start status
+    ; Send specified count, each with specified interval
     IfWinNotActive,%BServer%
     {
         EndFunc()
@@ -9322,34 +9322,34 @@ LoopBagAction(p_LX, p_LY, p_RX, p_RY, p_line, p_col, p_key, p_time) ;参数：�
         Return
     }
 
-    ; 2. 获取游戏窗口坐标和尺寸
+    ; 2. Get game window coord and size
     WinGetPos, winX, winY, winW, winH, %BServer%
-    ; 获取窗口标题栏高度
+    ; Get window title bar height
     sysget, titlebar_height, 4, %BServer%
     if (BDispMode = 2)
     {
         titlebar_height := 0
     }
-    ; 有效高度（排除标题栏）
+    ; Effective height (exclude title bar)
     effectiveH := winH - titlebar_height
 
-    ; 3. 计算背包 实际像素坐标（比例 → 像素）
-    ; 左上角实际坐标
+    ; 3. Calculate backpack actual pixel coord (ratio → pixel)
+    ; Top left actual coord
     bagTopX := winW * p_LX
     bagTopY := effectiveH * p_LY
-    ; 左下角实际坐标
+    ; Bottom left actual coord
     bagBottomX := winW * p_RX
     bagBottomY := effectiveH * p_RY
 
-    ; 4. 计算单个格子的宽度、高度（均分方形格子）
-    ; 背包总宽度/高度
+    ; 4. Calculate single grid width, height (evenly divided square grid)
+    ; Backpack total width/height
     bagWidth := bagBottomX - bagTopX
     bagHeight := bagBottomY - bagTopY
-    ; 单个格子尺寸
+    ; Single grid size
     cellW := bagWidth / p_col
     cellH := bagHeight / p_line
 
-    ; 5. 双层循环：遍历每一行 + 每一列 → 格子中心
+    ; 5. Double loop: traverse each row + each column → grid center
     Loop, % p_line
     {
         IfWinNotActive,%BServer%
@@ -9358,28 +9358,28 @@ LoopBagAction(p_LX, p_LY, p_RX, p_RY, p_line, p_col, p_key, p_time) ;参数：�
             boss_Enable=0
             Break
         }
-        currentRow := A_Index  ; 当前行（从1开始）
+        currentRow := A_Index  ; Current row (start from 1)
         Loop, % p_col
         {
-            currentCol := A_Index  ; 当前列（从1开始）
+            currentCol := A_Index  ; Current column (start from 1)
             
-            ; 计算当前格子中心坐标
+            ; Calculate current grid center coord
             centerX := bagTopX + (currentCol - 1) * cellW + cellW / 2
             centerY := bagTopY + (currentRow - 1) * cellH + cellH / 2
 
-            ; 6. 鼠标移动到格子中心（相对游戏窗口）
-            MouseMove, centerX, centerY, 1  ; 0=瞬间移动，可改速度（1~100）
-            Sleep, 10  ; 移动后短暂延迟，游戏更稳定
+            ; 6. Mouse move to grid center (relative game window)
+            MouseMove, centerX, centerY, 1  ; 0=instant move, can change speed (1~100)
+            Sleep, 10  ; Short delay after move, game more stable
             
-            ; 7. 发送指定按键
+            ; 7. Send specified key
             Send, {%p_key%}
-            Sleep, %p_time%   ; 按键后延迟，防止操作过快
+            Sleep, %p_time%   ; Delay after key, prevent operation too fast
         }
     }
 }
 ;----------------------------------------------------------------------
 
-; #endregion 通用函数END
+; #endregion Common Functions END
 ;--------------------------------------------------------------------------------------------------------------------------------------------
 
 ;Control_Colors--------------------------------------------------------
@@ -9409,22 +9409,22 @@ Control_Colors(wParam, lParam, Msg, Hwnd) {
 
 SendString( string )
 {
-    Len := StrLen(string)  ; 得到字符串的长度，注意一个中文字符的长度是2，即占2个字节
-    Keys := ""                  ; 将要发送的字符序列
-    Index := 1                  ; 用于循环
+    Len := StrLen(string)  ; Get string length, note Chinese character length is 2, occupies 2 bytes
+    Keys := ""                  ; Character sequence to send
+    Index := 1                  ; For loop
     Loop
     {
         IsUnicodeChar := false
-        Code2 := 0                                             ; 字符2的ASCII码
-        Code1 := Asc( SubStr(string, Index, 1) )    ; 得到第一个字符的ASCII值
-        if(Code1 >= 129 && Code1 <= 254 && Index < Len)   ; 判断是否中文字符的第一个字符
+        Code2 := 0                                             ; Character 2 ASCII code
+        Code1 := Asc( SubStr(string, Index, 1) )    ; Get first character ASCII value
+        if(Code1 >= 129 && Code1 <= 254 && Index < Len)   ; Judge if Chinese character first character
         {
-            Code2 := Asc( SubStr(string, Index+1, 1) )            ; 得到第二个字符的ASCII值
-            if(Code2 >= 64 && Code2 <= 254)        ; 若条件成立则说明是中文字符
+            Code2 := Asc( SubStr(string, Index+1, 1) )            ; Get second character ASCII value
+            if(Code2 >= 64 && Code2 <= 254)        ; If condition true then Chinese character
             {
                 IsUnicodeChar := true
-                Code1 <<= 8                                  ; 第一个字符应放到高8位上
-                Code1 += Code2                              ; 第二个字符放在低8位上
+                Code1 <<= 8                                  ; First character should be on high 8 bits
+                Code1 += Code2                              ; Second character on low 8 bits
             }
             ++Index
         }
@@ -9432,7 +9432,7 @@ SendString( string )
             Keys .= "{ASC " . Code1 . "}"
         else
         {
-            Keys .= "{ASC 0" . Code1 . "}"                ; 如果非中文字符，则需要前缀一个0
+            Keys .= "{ASC 0" . Code1 . "}"                ; If non Chinese character, need prefix a 0
             if( Code2 > 0 )
                 Keys .= "{ASC 0" . Code2 . "}"
         }
@@ -9456,7 +9456,7 @@ SendByClipboard( string, BackupClipBoard = false )
     }
 }
 
-;**************************************************************** 内嵌版Acc.ahk
+;**************************************************************** Embedded Acc.ahk
 ROLE_SYSTEM_PUSHBUTTON := 0x2B
 
 Acc_ObjectFromWindow(hwnd, objId := -4)  ; -4 = OBJID_CLIENT
@@ -9497,7 +9497,7 @@ Acc_CollectByRole(acc, role, ByRef out)
         if (childRole = role)
             out.Push(child)
 
-        ; 继续向下递归
+        ; Continue recursive downward
         Acc_CollectByRole(child, role, out)
     }
 }
